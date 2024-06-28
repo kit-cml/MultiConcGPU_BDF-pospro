@@ -481,8 +481,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
         // before the peak calcium
 
         if (temp_result[sample_id].cai_time[ca_looper] < t_ca_peak) {
-            // printf("ca_looper: %d, cai_data: %lf, ca_amp90: %lf \n", ca_looper,
-                   temp_result[sample_id].cai_data[ca_looper], ca_amp90);
+            // printf("ca_looper: %d, cai_data: %lf, ca_amp90: %lf \n", ca_looper,temp_result[sample_id].cai_data[ca_looper], ca_amp90);
             if (lowest_cai > temp_result[sample_id].cai_data[ca_looper]) {
                 lowest_cai = temp_result[sample_id].cai_data[ca_looper];
                 position = ca_looper;
