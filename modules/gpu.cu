@@ -122,7 +122,8 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     double inet, qinward;
     double inal_auc, ical_auc;
     double vm_repol30, vm_repol50, vm_repol90;
-    double t_depol;
+    double  t_depol = (d_CONSTANTS[(sample_id * num_of_constants) + BCL] * pace_count) +
+                      d_CONSTANTS[(sample_id * num_of_constants) + stim_start];
     double t_ca_peak, ca_amp50, ca_amp90;
     double cad50_prev, cad50_curr, cad90_prev, cad90_curr;
 
