@@ -255,8 +255,15 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
             cipa_result[sample_id].ca_peak = temp_result[sample_id].ca_peak;
             cipa_result[sample_id].ca_valley = d_STATES[(sample_id * num_of_states) + cai];
             cipa_result[sample_id].ca_dia = temp_result[sample_id].ca_dia;
-            cipa_result[sample_id].cad90 = temp_result[sample_id].cad90;
-            cipa_result[sample_id].cad50 = temp_result[sample_id].cad50;
+            
+            // cipa_result[sample_id].cad90 = temp_result[sample_id].cad90;
+            // cipa_result[sample_id].cad50 = temp_result[sample_id].cad50;
+             if(cipa_result[sample_id].apd50 != 0.){
+                cipa_result[sample_id].cad50 = temp_result[sample_id].cad50;
+            }
+            if(cipa_result[sample_id].apd90 != 0.){
+                cipa_result[sample_id].cad90 = temp_result[sample_id].cad90;
+            }
 
             cipa_result[sample_id].dvmdt_repol = temp_result[sample_id].dvmdt_repol;
             cipa_result[sample_id].vm_peak = temp_result[sample_id].vm_peak;
@@ -508,11 +515,16 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     // printf("core: %d ca_peak %lf | : 50: %lf - %lf 90: %lf - %lf\n",sample_id, t_ca_peak, cad50_curr, cad50_prev,
     // cad90_curr, cad90_prev); printf("ca_peak: %lf ca_valley %lf\n", temp_result[sample_id].ca_peak,
     // temp_result[sample_id].ca_valley); printf("cai_data[0] %lf \n",temp_result[sample_id].cai_data[0]);
-    temp_result[sample_id].cad50 = cad50_curr - cad50_prev;  // the curr is lower than the prev, like waaay lower, its a
-                                                             // negative (it shouldnt be, since its in time)
+    // the curr is lower than the prev, like waaay lower, its a // negative (it shouldnt be, since its in time)
+    temp_result[sample_id].cad50 = cad50_curr - cad50_prev;  
     temp_result[sample_id].cad90 = cad90_curr - cad90_prev;
-    cipa_result[sample_id].cad90 = temp_result[sample_id].cad90;
-    cipa_result[sample_id].cad50 = temp_result[sample_id].cad50;
+    if(cipa_result[sample_id].apd50 != 0.){
+        cipa_result[sample_id].cad50 = temp_result[sample_id].cad50;
+    }
+    if(cipa_result[sample_id].apd90 != 0.){
+        cipa_result[sample_id].cad90 = temp_result[sample_id].cad90;
+    }
+    
 }
 
 __global__ void kernel_DrugSimulation(double *d_ic50, double *d_cvar, double *d_conc, double *d_CONSTANTS,
