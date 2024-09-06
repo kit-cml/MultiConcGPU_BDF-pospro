@@ -616,8 +616,7 @@ int main(int argc, char **argv) {
     writer = fopen(filename, "a");
 
     fprintf(writer,
-            "sample,qnet,inal_auc,ical_auc,apd90,apd50,apd_tri,cad90,cad50,cad_tri,dvmdt_repol,vm_peak,vm_valley,vm_"
-            "dia,ca_peak,ca_valley,ca_dia\n");
+            "sample,qnet,inal_auc,ical_auc,apd90,apd50,apd_tri,cad90,cad50,cad_tri,dvmdt_repol,dvmdt_peak,vm_peak,vm_valley,vm_dia,ca_peak,ca_valley,ca_dia\n");
     for (int sample_id = 0; sample_id < sample_size; sample_id++) {
         // printf("writing sample %d... \n",sample_id);
 
@@ -634,10 +633,13 @@ int main(int argc, char **argv) {
                 h_cipa_result[sample_id].cad90, h_cipa_result[sample_id].cad50,
                 h_cipa_result[sample_id].cad90 - h_cipa_result[sample_id].cad50,
 
-                h_cipa_result[sample_id].dvmdt_repol, h_cipa_result[sample_id].vm_peak,
+                h_cipa_result[sample_id].dvmdt_repol, h_cipa_result[sample_id].dvmdt_max, h_cipa_result[sample_id].vm_peak,
                 h_cipa_result[sample_id].vm_valley, h_cipa_result[sample_id].vm_dia,
 
-                h_cipa_result[sample_id].ca_peak, h_cipa_result[sample_id].ca_valley, h_cipa_result[sample_id].ca_dia
+                h_cipa_result[sample_id].ca_peak, h_cipa_result[sample_id].ca_valley, 
+                h_cipa_result[sample_id].ca_dia
+
+                
 
                 //      temp_result[sample_id].qnet = 0.;
                 // temp_result[sample_id].inal_auc = 0.;
