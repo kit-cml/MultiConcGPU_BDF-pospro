@@ -638,26 +638,8 @@ int main(int argc, char **argv) {
 
                 h_cipa_result[sample_id].ca_peak, h_cipa_result[sample_id].ca_valley, 
                 h_cipa_result[sample_id].ca_dia
-
                 
 
-                //      temp_result[sample_id].qnet = 0.;
-                // temp_result[sample_id].inal_auc = 0.;
-                // temp_result[sample_id].ical_auc = 0.;
-
-                // temp_result[sample_id].dvmdt_repol = -999;
-                // temp_result[sample_id].dvmdt_max = -999;
-                // temp_result[sample_id].vm_peak = -999;
-                // temp_result[sample_id].vm_valley = d_STATES[(sample_id * num_of_states) +V];
-                // temp_result[sample_id].vm_dia = -999;
-
-                // temp_result[sample_id].apd90 = 0.;
-                // temp_result[sample_id].apd50 = 0.;
-                // temp_result[sample_id].ca_peak = -999;
-                // temp_result[sample_id].ca_valley = d_STATES[(sample_id * num_of_states) +cai];
-                // temp_result[sample_id].ca_dia = -999;
-                // temp_result[sample_id].cad90 = 0.;
-                // temp_result[sample_id].cad50 = 0.;
         );
     }
     fclose(writer);
