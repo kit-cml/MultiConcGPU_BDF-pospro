@@ -481,7 +481,7 @@ int main(int argc, char **argv) {
     cudaMemcpy(d_p_param, p_param, sizeof(param_t), cudaMemcpyHostToDevice);
 
       // for BDF
-        double *d_all_states;
+        //double *d_all_states;
         double *d_herg;
 
         double *y; double *y_new; double *F; double *delta; double *Jc; 
@@ -521,11 +521,19 @@ int main(int argc, char **argv) {
     // initscr();
     // printf("[____________________________________________________________________________________________________]
     // 0.00 %% \n");
+    // (double *d_ic50, double *d_cvar, double *d_conc, double *d_CONSTANTS,
+    //                                   double *d_STATES, double *d_STATES_cache, double *d_RATES, double *d_ALGEBRAIC,
+    //                                   double *d_STATES_RESULT, double *d_all_states, double *d_herg,
+    //                                   double *time, double *states,
+    //                                   double *out_dt, double *cai_result, double *ina, double *inal, double *ical,
+    //                                   double *ito, double *ikr, double *iks, double *ik1, unsigned int sample_size,
+    //                                   cipa_t *temp_result, cipa_t *cipa_result, param_t *p_param,
+    //                                   double *y, double *y_new, double *F, double *delta, double *Jc, double *y_perturbed, double *g0, double *g_perturbed) 
 
     kernel_DrugSimulation<<<block, thread>>>(d_ic50, d_cvar, d_conc, d_CONSTANTS, d_STATES, d_STATES_cache, d_RATES,
-                                             d_ALGEBRAIC, d_STATES_RESULT, d_all_states, time, states, dt, cai_result,
+                                             d_ALGEBRAIC, d_STATES_RESULT, d_all_states, d_herg, time, states, dt, cai_result,
                                              ina, inal, ical, ito, ikr, iks, ik1, sample_size, temp_result, cipa_result,
-                                             d_p_param);
+                                             d_p_param, y, y_new, F, delta, Jc, y_perturbed, g0, g_perturbed);
     // block per grid, threads per block
     // endwin();
 
