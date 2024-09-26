@@ -195,8 +195,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     while (tcurr[sample_id] < tmax) {
         computeRates(tcurr[sample_id], d_CONSTANTS, d_RATES, d_STATES, d_ALGEBRAIC, sample_id);
 
-        dt_set = set_time_step(tcurr[sample_id], time_point, max_time_step, d_CONSTANTS, d_RATES, d_STATES, d_ALGEBRAIC,
-                               sample_id);
+        dt_set = set_time_step( tcurr[sample_id], time_point, max_time_step, d_CONSTANTS, d_RATES, sample_id); 
 
         if (d_STATES[(sample_id * num_of_states) + V] > inet_vm_threshold) {
             inet +=
