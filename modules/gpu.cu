@@ -25,10 +25,10 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
                                         double *y, double *y_new, double *F, double *delta, double *Jc, double *y_perturbed, double *g0, double *g_perturbed) {
     unsigned long long input_counter = 0;
 
-    int num_of_constants = 146;
-    int num_of_states = 41;
-    int num_of_algebraic = 199;
-    int num_of_rates = 41;
+    int num_of_constants = 206;
+    int num_of_states = 49;
+    int num_of_algebraic = 200;
+    int num_of_rates = 49;
 
     // INIT STARTS
 
@@ -68,7 +68,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     // bool is_peak = false;
     // to search max dvmdt repol
 
-    tcurr[sample_id] = 0.000001;
+    tcurr[sample_id] = 0.0;
     dt[sample_id] = p_param->dt;
     double tmax;
     double max_time_step = 1.0, time_point = 25.0;
@@ -146,7 +146,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     // static const int CURRENT_SCALING = 1000;
 
     // printf("Core %d:\n",sample_id);
-    initConsts(d_CONSTANTS, d_STATES, type, conc, d_ic50, d_cvar, dutta, p_param->is_cvar, sample_id);
+    initConsts(d_CONSTANTS, d_STATES, type, conc, d_ic50, d_herg, d_cvar, p_param->is_dutta, p_param->is_cvar, bcl, epsilon, sample_id);
     // starting from initial value, to make things simpler for now, we're just going to replace what initConst has done
     // to the d_STATES and bring them back to cached initial values:
     // TODO: 1. modify this line of code to make it clean
@@ -317,7 +317,9 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
             // cipa_result[sample_id].dvmdt_repol,t_peak_capture); writen = false;
         }
 
-        solveAnalytical(d_CONSTANTS, d_STATES, d_ALGEBRAIC, d_RATES, dt[sample_id], sample_id);
+        // solveAnalytical(d_CONSTANTS, d_STATES, d_ALGEBRAIC, d_RATES, dt[sample_id], sample_id);
+        solveBDF1(tcurr[sample_id], dt[sample_id], epsilon, d_CONSTANTS, d_STATES, d_ALGEBRAIC, y, y_new, F, delta, Jc, y_perturbed, g0, g_perturbed, sample_id);
+
         if (temp_result[sample_id].dvmdt_max < d_RATES[(sample_id * num_of_states) + V])
             temp_result[sample_id].dvmdt_max = d_RATES[(sample_id * num_of_states) + V];
 
@@ -481,6 +483,12 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
         tcurr[sample_id] = tcurr[sample_id] + dt[sample_id];
         // printf("t after addition: %lf\n", tcurr[sample_id]);
 
+         // finish if nan
+        if(isnan(d_STATES[(sample_id * num_of_states) + V]) == true) {
+          printf("core %d has nan, ejecting\n", sample_id);
+          return;
+        }
+
     }  // while (tcurr[sample_id] < tmax) loop ends here
     // __syncthreads();
 
@@ -548,7 +556,8 @@ __global__ void kernel_DrugSimulation(double *d_ic50, double *d_cvar, double *d_
     // printf("in\n");
 
     kernel_DoDrugSim_single(d_ic50, d_cvar, d_conc[thread_id], d_CONSTANTS, d_STATES, d_STATES_cache, d_RATES,
-                            d_ALGEBRAIC, d_herg, 
+                            d_ALGEBRAIC, 
+                            d_herg, 
                             time, states, out_dt, cai_result, ina, inal, ical, ito, ikr, iks, ik1,
                             time_for_each_sample, dt_for_each_sample, thread_id, sample_size, temp_result, cipa_result,
                             p_param,  
