@@ -286,11 +286,43 @@ int check_IC50_content(const drug_t *ic50, const param_t *p_param) {
     }
 }
 
+int get_herg_data_from_file(const char* file_name, double *herg)
+{
+  FILE *fp_herg;
+  char *token;
+  char buffer_herg[255];
+  unsigned int idx;
+
+  if( (fp_herg = fopen(file_name, "r")) == NULL){
+    printf("Cannot open file %s\n", file_name);
+    return 0;
+  }
+  printf("Herg file %s\n", file_name);
+  idx = 0;
+  int sample_size = 0;
+  fgets(buffer_herg, sizeof(buffer_herg), fp_herg); // skip header
+  while( fgets(buffer_herg, sizeof(buffer_herg), fp_herg) != NULL )
+    { // begin line reading
+      token = strtok( buffer_herg, "," );
+      while( token != NULL )
+      { // begin data tokenizing
+        herg[idx++] = strtod(token, NULL);
+        token = strtok(NULL, ",");
+      } // end data tokenizing
+      sample_size++;
+    } // end line reading
+
+  fclose(fp_herg);
+  return sample_size;
+}
+
 int main(int argc, char **argv) {
     // enable real-time output in stdout
     setvbuf(stdout, NULL, _IONBF, 0);
 
     // NEW CODE STARTS HERE //
+    double inal_auc_control = -90.547322;    // AUC of INaL under control model
+    double ical_auc_control = -105.935067;   // AUC of ICaL under control model
     // mycuda *thread_id;
     // cudaMalloc(&thread_id, sizeof(mycuda));
 
@@ -317,11 +349,12 @@ int main(int argc, char **argv) {
     // if (p_param->is_cvar == true) cvar = (double *)malloc(18 * sample_limit * sizeof(double));
     cvar = (double *)malloc(18 * sample_limit * sizeof(double));
     conc = (double *)malloc(sample_limit * sizeof(double));
+    double* herg = (double *)malloc(6 * sample_limit * sizeof(double));
 
-    int num_of_constants = 146;
-    int num_of_states = 41;
-    int num_of_algebraic = 199;
-    int num_of_rates = 41;
+    int num_of_constants = 206;
+    int num_of_states = 49;
+    int num_of_algebraic = 200;
+    int num_of_rates = 49;
 
     // const double CONC = p_param->conc;
 
@@ -382,6 +415,16 @@ int main(int argc, char **argv) {
         printf("Reading: %d Conductance Variability samples\n", cvar_sample);
     }
 
+    int herg_size = get_herg_data_from_file(p_param->herg_file, herg);
+        if(herg_size == 0)
+            printf("Something problem with the herg file!\n");
+        
+        printf("herg size: %d herg check:\n", herg_size);
+            for(int temp = 0; temp<6; temp++){
+            printf("%lf, ",herg[temp]);
+            } 
+            printf("\n");
+
     printf("preparing GPU memory space \n");
 
     // char buffer_cvar[255];
@@ -436,6 +479,25 @@ int main(int argc, char **argv) {
     cudaMemcpy(d_cvar, cvar, sample_size * 18 * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_conc, conc, sample_size * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_p_param, p_param, sizeof(param_t), cudaMemcpyHostToDevice);
+
+      // for BDF
+        double *d_all_states;
+        double *d_herg;
+
+        double *y; double *y_new; double *F; double *delta; double *Jc; 
+        double *y_perturbed; double *g0; double *g_perturbed; 
+        cudaMalloc(&y, num_of_states * sample_size * sizeof(double));
+        cudaMalloc(&y_new, num_of_states * sample_size * sizeof(double));
+        cudaMalloc(&F, num_of_states * sample_size * sizeof(double));
+        cudaMalloc(&delta, num_of_states * sample_size * sizeof(double));
+        cudaMalloc(&Jc, num_of_states * num_of_states * sample_size * sizeof(double));
+
+        cudaMalloc(&y_perturbed, num_of_states * sample_size * sizeof(double));
+        cudaMalloc(&g0, num_of_states * sample_size * sizeof(double));
+        cudaMalloc(&g_perturbed, num_of_states * sample_size * sizeof(double));
+
+        cudaMalloc(&d_all_states, num_of_states * sample_size * p_param->find_steepest_start * sizeof(double)); // for each sample
+        cudaMalloc(&d_herg, 6 * sample_size * sizeof(double));
 
     // // Get the maximum number of active blocks per multiprocessor
     // cudaOccupancyMaxActiveBlocksPerMultiprocessor(&numBlocks, do_drug_sim_analytical, threadsPerBlock);
