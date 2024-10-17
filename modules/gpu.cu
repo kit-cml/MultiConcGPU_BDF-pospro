@@ -188,6 +188,14 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     int pace_count = 0;
 
     bool is_euler = false;
+    int sample_limit;
+
+    if(is_euler){
+        sample_limit = p_param->bcl / p_param->dt;
+    }
+    else {
+        sample_limit = p_param->sampling_limit;
+    }
 
     // printf("%d,%lf,%lf,%lf,%lf\n", sample_id, dt[sample_id], tcurr[sample_id], d_STATES[V + (sample_id *
     // num_of_states)],d_RATES[V + (sample_id * num_of_rates)]); printf("%lf,%lf,%lf,%lf,%lf\n", d_ic50[0 +
@@ -198,7 +206,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
         computeRates(tcurr[sample_id], d_CONSTANTS, d_RATES, d_STATES, d_ALGEBRAIC, sample_id);
 
         if(is_euler){
-            dt_set = 0.005;
+            dt_set = p_param->dt;
         }
         else {
             dt_set = set_time_step( tcurr[sample_id], time_point, max_time_step, d_CONSTANTS, d_RATES, sample_id); 
@@ -435,7 +443,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
 
         // save temporary result -> ALL TEMP RESULTS IN, TEMP RESULT != WRITTEN RESULT
 
-        if (cipa_datapoint < p_param->sampling_limit) {  // temporary solution to limit the datapoint :(
+        if (cipa_datapoint < sample_limit) {  // temporary solution to limit the datapoint :(
 
             temp_result[sample_id].cai_data[cipa_datapoint] = d_STATES[(sample_id * num_of_states) + cai];
             temp_result[sample_id].cai_time[cipa_datapoint] = tcurr[sample_id];
@@ -508,7 +516,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     // looking for cad50 and 90
     // int lowest_cai = 1;
     // int position = 0;
-    for (int ca_looper = 0; ca_looper < p_param->sampling_limit; ca_looper++) {
+    for (int ca_looper = 0; ca_looper < sample_limit; ca_looper++) {
         // before the peak calcium
 
         if (temp_result[sample_id].cai_time[ca_looper] < t_ca_peak) {
