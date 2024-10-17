@@ -1096,11 +1096,8 @@ __device__ void computeRates( double TIME, double *CONSTANTS, double *RATES, dou
 
 __device__ void solveEuler( double *STATES, double *RATES, double dt, int offset)
 {
-    short states_size = 49;
-    short rates_size = 49;
-
-    for(int i=0;i<states_size;i++){
-    STATES[(states_size * offset) + i] = STATES[(states_size * offset) + i] + RATES[(rates_size * offset) + i] * dt;
+    for(int i=0;i<49;i++){
+    STATES[(49 * offset) + i] = STATES[(49 * offset) + i] + RATES[(49 * offset) + i] * dt;
     }
 }
 
