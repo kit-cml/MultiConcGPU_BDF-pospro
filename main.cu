@@ -362,7 +362,16 @@ int main(int argc, char **argv) {
 
     printf("Using cached initial state from previous result!!!! \n\n");
 
-    const unsigned int datapoint_size = p_param->sampling_limit;
+    unsigned int datapoint_size;
+    bool is_euler = false;
+
+    if(is_euler){
+        datapoint_size = p_param->bcl / p_param->dt;
+    }
+    else {
+        datapoint_size = p_param->sampling_limit;
+    }
+
     double *cache;
     cache = (double *)malloc(num_of_states * sample_limit * sizeof(double));
 
