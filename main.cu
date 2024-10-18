@@ -363,10 +363,11 @@ int main(int argc, char **argv) {
     printf("Using cached initial state from previous result!!!! \n\n");
 
     unsigned int datapoint_size;
-    bool is_euler = false;
+    bool is_euler = true;
 
     if(is_euler){
-        datapoint_size = p_param->bcl / p_param->dt;
+        // datapoint_size = p_param->bcl / p_param->dt;
+        datapoint_size = 57000;
     }
     else {
         datapoint_size = p_param->sampling_limit;

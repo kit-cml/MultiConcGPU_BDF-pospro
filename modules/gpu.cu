@@ -187,11 +187,11 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     tmax = pace_max * bcl;
     int pace_count = 0;
 
-    bool is_euler = false;
+    bool is_euler = true;
     int sample_limit;
 
     if(is_euler){
-        sample_limit = p_param->bcl / p_param->dt;
+        sample_limit = 57000;
     }
     else {
         sample_limit = p_param->sampling_limit;
