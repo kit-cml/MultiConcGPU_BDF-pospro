@@ -117,6 +117,8 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     double t_peak_capture = 0.0;
     unsigned short pace_steepest = 0;
 
+    unsigned int dtw_counter = 0;
+
     // qnet_ap/inet_ap values
     // double inet_ap, qnet_ap, inet4_ap, qnet4_ap, inet_cl, qnet_cl, inet4_cl, qnet4_cl;
     // double inal_auc_ap, ical_auc_ap,inal_auc_cl, ical_auc_cl;
@@ -191,7 +193,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     int sample_limit;
 
     if(is_euler){
-        sample_limit = 57000;
+        sample_limit = 7000;
     }
     else {
         sample_limit = p_param->sampling_limit;
@@ -201,7 +203,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     // num_of_states)],d_RATES[V + (sample_id * num_of_rates)]); printf("%lf,%lf,%lf,%lf,%lf\n", d_ic50[0 +
     // (14*sample_id)], d_ic50[1+ (14*sample_id)], d_ic50[2+ (14*sample_id)], d_ic50[3+ (14*sample_id)], d_ic50[4+
     // (14*sample_id)]);
-
+    printf("here\n");
     while (tcurr[sample_id] < tmax) {
         computeRates(tcurr[sample_id], d_CONSTANTS, d_RATES, d_STATES, d_ALGEBRAIC, sample_id);
 
@@ -223,18 +225,18 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
             inal_auc += d_ALGEBRAIC[(sample_id * num_of_algebraic) + INaL] * dt[sample_id];
             ical_auc += d_ALGEBRAIC[(sample_id * num_of_algebraic) + ICaL] * dt[sample_id];
 
-            // if (sample_id == 1){
-            // printf("%lf %lf %lf %lf %lf %lf\n",
-            // (d_ALGEBRAIC[(sample_id * num_of_algebraic) +INaL]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
-            // +ICaL]+d_ALGEBRAIC[(sample_id * num_of_algebraic) +Ito]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
-            // +IKr]+d_ALGEBRAIC[(sample_id * num_of_algebraic) +IKs]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
-            // +IK1])*dt[sample_id], d_ALGEBRAIC[(sample_id * num_of_algebraic) +INaL]*dt[sample_id],
-            // d_ALGEBRAIC[(sample_id * num_of_algebraic) +ICaL]*dt[sample_id],
-            // inet,
-            // inal_auc,
-            // ical_auc
-            // );
-            // }
+            if (sample_id == 1){
+            printf("%lf %lf %lf %lf %lf %lf\n",
+            (d_ALGEBRAIC[(sample_id * num_of_algebraic) +INaL]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
+            +ICaL]+d_ALGEBRAIC[(sample_id * num_of_algebraic) +Ito]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
+            +IKr]+d_ALGEBRAIC[(sample_id * num_of_algebraic) +IKs]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
+            +IK1])*dt[sample_id], d_ALGEBRAIC[(sample_id * num_of_algebraic) +INaL]*dt[sample_id],
+            d_ALGEBRAIC[(sample_id * num_of_algebraic) +ICaL]*dt[sample_id],
+            inet,
+            inal_auc,
+            ical_auc
+            );
+            }
         }
         // printf("INaL AUC: %lf\n", inal_auc);
         //  how can we properly update this value?
@@ -443,7 +445,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
 
         // save temporary result -> ALL TEMP RESULTS IN, TEMP RESULT != WRITTEN RESULT
 
-        if (cipa_datapoint < sample_limit) {  // temporary solution to limit the datapoint :(
+        if (cipa_datapoint < sample_limit && dtw_counter == 1/p_param->dt) {  // temporary solution to limit the datapoint :(
 
             temp_result[sample_id].cai_data[cipa_datapoint] = d_STATES[(sample_id * num_of_states) + cai];
             temp_result[sample_id].cai_time[cipa_datapoint] = tcurr[sample_id];
@@ -481,6 +483,8 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
 
             input_counter = input_counter + sample_size;
             cipa_datapoint = cipa_datapoint + 1;  // this causes the resource usage got so mega and crashed in running
+            dtw_counter = 0;
+            if (sample_id == 0) printf("Printed!\n");
         }
 
         // cipa result update
@@ -509,6 +513,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
           return;
         }
         if (sample_id == 0) printf("time: %lf\n", tcurr[0]);
+        dtw_counter++;
 
     }  // while (tcurr[sample_id] < tmax) loop ends here
     // __syncthreads();

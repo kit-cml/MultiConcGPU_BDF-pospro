@@ -367,7 +367,7 @@ int main(int argc, char **argv) {
 
     if(is_euler){
         // datapoint_size = p_param->bcl / p_param->dt;
-        datapoint_size = 57000;
+        datapoint_size = 7000;
     }
     else {
         datapoint_size = p_param->sampling_limit;
@@ -482,11 +482,11 @@ int main(int argc, char **argv) {
 
     printf("Copying sample files to GPU memory space \n");
     cudaMalloc(&d_ic50, sample_size * 14 * sizeof(double));
-    cudaMalloc(&d_cvar, sample_size * 18 * sizeof(double));
+    // cudaMalloc(&d_cvar, sample_size * 18 * sizeof(double));
     cudaMalloc(&d_conc, sample_size * sizeof(double));
     cudaMemcpy(d_STATES_cache, cache, (num_of_states + 2) * sample_size * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_ic50, ic50, sample_size * 14 * sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_cvar, cvar, sample_size * 18 * sizeof(double), cudaMemcpyHostToDevice);
+    // cudaMemcpy(d_cvar, cvar, sample_size * 18 * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_conc, conc, sample_size * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_p_param, p_param, sizeof(param_t), cudaMemcpyHostToDevice);
 
@@ -695,8 +695,7 @@ int main(int argc, char **argv) {
 
     writer = fopen(filename, "a");
 
-    fprintf(writer,
-            "sample,qnet,inal_auc,ical_auc,apd90,apd50,apd_tri,cad90,cad50,cad_tri,dvmdt_repol,dvmdt_peak,vm_peak,vm_valley,vm_dia,ca_peak,ca_valley,ca_dia\n");
+    fprintf(writer,"sample,qnet,inal_auc,ical_auc,apd90,apd50,apd_tri,cad90,cad50,cad_tri,dvmdt_repol,dvmdt_peak,vm_peak,vm_valley,vm_dia,ca_peak,ca_valley,ca_dia\n");
     for (int sample_id = 0; sample_id < sample_size; sample_id++) {
         // printf("writing sample %d... \n",sample_id);
 
