@@ -367,7 +367,7 @@ int main(int argc, char **argv) {
 
     if(is_euler){
         // datapoint_size = p_param->bcl / p_param->dt;
-        datapoint_size = 7000;
+        datapoint_size = 1001;
     }
     else {
         datapoint_size = p_param->sampling_limit;

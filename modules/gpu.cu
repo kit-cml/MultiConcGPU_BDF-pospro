@@ -193,7 +193,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     int sample_limit;
 
     if(is_euler){
-        sample_limit = 7000;
+        sample_limit = 1001;
     }
     else {
         sample_limit = p_param->sampling_limit;
