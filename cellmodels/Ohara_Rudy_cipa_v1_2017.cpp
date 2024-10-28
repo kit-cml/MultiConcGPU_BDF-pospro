@@ -790,12 +790,12 @@ CONSTANTS[(constant_size * offset) + Pnak] = (CONSTANTS[(constant_size * offset)
 __device__ void applyDrugEffect(double *CONSTANTS, double conc, double *ic50, double epsilon, int offset)
 {
 short constant_size = 206;
-CONSTANTS[(constant_size * offset) + GK1] = CONSTANTS[(constant_size * offset) + GK1] * ((ic50[(offset*14) + 2] > 10E-14 && ic50[(offset*14) + 3] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 2],ic50[(offset*14) + 3])) : 1.);
-CONSTANTS[(constant_size * offset) + GKs] = CONSTANTS[(constant_size * offset) + GKs] * ((ic50[(offset*14) + 4] > 10E-14 && ic50[(offset*14) + 5] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 4],ic50[(offset*14) + 5])) : 1.);
-CONSTANTS[(constant_size * offset) + GNaL] = CONSTANTS[(constant_size * offset) + GNaL] * ((ic50[(offset*14) + 8] > 10E-14 && ic50[(offset*14) + 9] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 8],ic50[(offset*14) + 9])) : 1.);
+CONSTANTS[(constant_size * offset) + GK1_b] = CONSTANTS[(constant_size * offset) + GK1_b] * ((ic50[(offset*14) + 2] > 10E-14 && ic50[(offset*14) + 3] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 2],ic50[(offset*14) + 3])) : 1.);
+CONSTANTS[(constant_size * offset) + GKs_b] = CONSTANTS[(constant_size * offset) + GKs_b] * ((ic50[(offset*14) + 4] > 10E-14 && ic50[(offset*14) + 5] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 4],ic50[(offset*14) + 5])) : 1.);
+CONSTANTS[(constant_size * offset) + GNaL_b] = CONSTANTS[(constant_size * offset) + GNaL_b] * ((ic50[(offset*14) + 8] > 10E-14 && ic50[(offset*14) + 9] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 8],ic50[(offset*14) + 9])) : 1.);
 CONSTANTS[(constant_size * offset) + GNa] = CONSTANTS[(constant_size * offset) + GNa] * ((ic50[(offset*14) + 6] > 10E-14 && ic50[(offset*14) + 7] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 6],ic50[(offset*14) + 7])) : 1.);
-CONSTANTS[(constant_size * offset) + Gto] = CONSTANTS[(constant_size * offset) + Gto] * ((ic50[(offset*14) + 10] > 10E-14 && ic50[(offset*14) + 11] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 10],ic50[(offset*14) + 11])) : 1.);
-CONSTANTS[(constant_size * offset) + PCa] = CONSTANTS[(constant_size * offset) + PCa] * ( (ic50[(offset*14) + 0] > 10E-14 && ic50[(offset*14) + 1] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 0],ic50[(offset*14) + 1])) : 1.);
+CONSTANTS[(constant_size * offset) + Gto_b] = CONSTANTS[(constant_size * offset) + Gto_b] * ((ic50[(offset*14) + 10] > 10E-14 && ic50[(offset*14) + 11] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 10],ic50[(offset*14) + 11])) : 1.);
+CONSTANTS[(constant_size * offset) + PCa_b] = CONSTANTS[(constant_size * offset) + PCa_b] * ( (ic50[(offset*14) + 0] > 10E-14 && ic50[(offset*14) + 1] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 0],ic50[(offset*14) + 1])) : 1.);
 }
 
 __device__ void ___applyHERGBinding(double *CONSTANTS, double *STATES, double conc, double *herg, int offset)
