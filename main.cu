@@ -517,7 +517,7 @@ int main(int argc, char **argv) {
 
     tic();
     printf("Timer started, doing simulation.... \n\n\nGPU Usage at this moment: \n");
-    int thread = 32;
+    int thread = 20;
     int block = (sample_size + thread - 1) / thread;
     // int block = (sample_size + thread - 1) / thread;
     if (gpu_check(15 * sample_size * sizeof(double) + sizeof(param_t)) == 1) {
