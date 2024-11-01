@@ -12,7 +12,6 @@
 #include "../modules/glob_funct.hpp"
 #include <cuda_runtime.h>
 #include <cuda.h>
-#include <thrust/device_vector.h>
 
 /*
  * TIME is time in component environment (millisecond).
@@ -521,577 +520,591 @@
  * RATES[Jrelp] is d/dt Jrelp in component ryr (dimensionless).
  */
 
-// short algebraic_size = 200;
-// short constant_size = 206;
-// short states_size = 49;
-// short rates_size = 49;
+
+  // algebraic_size = 200;
+  // constants_size = 206;
+  // states_size = 49;
 
 __device__ void ___initConsts(double *CONSTANTS, double *STATES, double type, double bcl, int offset)
 {
-short constant_size = 206;
-short states_size = 49;
-CONSTANTS[(constant_size * offset) + celltype] = type;
-CONSTANTS[(constant_size * offset) + nao] = 140;
-CONSTANTS[(constant_size * offset) + cao] = 1.8;
-CONSTANTS[(constant_size * offset) + ko] = 5.4;
-CONSTANTS[(constant_size * offset) + R] = 8314;
-CONSTANTS[(constant_size * offset) + T] = 310;
-CONSTANTS[(constant_size * offset) + F] = 96485;
-CONSTANTS[(constant_size * offset) + zna] = 1;
-CONSTANTS[(constant_size * offset) + zca] = 2;
-CONSTANTS[(constant_size * offset) + zk] = 1;
-CONSTANTS[(constant_size * offset) + L] = 0.01;
-CONSTANTS[(constant_size * offset) + rad] = 0.0011;
-STATES[(states_size * offset) +  V] = -88.00190465;
-CONSTANTS[(constant_size * offset) + stim_start] = 10;
-CONSTANTS[(constant_size * offset) + stim_end] = 100000000000000000;
-CONSTANTS[(constant_size * offset) + amp] = -80;
-CONSTANTS[(constant_size * offset) + BCL] = 1000;
-CONSTANTS[(constant_size * offset) + duration] = 0.5;
-CONSTANTS[(constant_size * offset) + KmCaMK] = 0.15;
-CONSTANTS[(constant_size * offset) + aCaMK] = 0.05;
-CONSTANTS[(constant_size * offset) + bCaMK] = 0.00068;
-CONSTANTS[(constant_size * offset) + CaMKo] = 0.05;
-CONSTANTS[(constant_size * offset) + KmCaM] = 0.0015;
-STATES[(states_size * offset) +  CaMKt] = 0.0125840447;
-STATES[(states_size * offset) +  cass] = 8.49e-05;
-CONSTANTS[(constant_size * offset) + cmdnmax_b] = 0.05;
-CONSTANTS[(constant_size * offset) + kmcmdn] = 0.00238;
-CONSTANTS[(constant_size * offset) + trpnmax] = 0.07;
-CONSTANTS[(constant_size * offset) + kmtrpn] = 0.0005;
-CONSTANTS[(constant_size * offset) + BSRmax] = 0.047;
-CONSTANTS[(constant_size * offset) + KmBSR] = 0.00087;
-CONSTANTS[(constant_size * offset) + BSLmax] = 1.124;
-CONSTANTS[(constant_size * offset) + KmBSL] = 0.0087;
-CONSTANTS[(constant_size * offset) + csqnmax] = 10;
-CONSTANTS[(constant_size * offset) + kmcsqn] = 0.8;
-STATES[(states_size * offset) +  nai] = 7.268004498;
-STATES[(states_size * offset) +  nass] = 7.268089977;
-STATES[(states_size * offset) +  ki] = 144.6555918;
-STATES[(states_size * offset) +  kss] = 144.6555651;
-STATES[(states_size * offset) +  cansr] = 1.619574538;
-STATES[(states_size * offset) +  cajsr] = 1.571234014;
-STATES[(states_size * offset) +  cai] = 8.6e-05;
-CONSTANTS[(constant_size * offset) + cm] = 1;
-CONSTANTS[(constant_size * offset) + PKNa] = 0.01833;
-CONSTANTS[(constant_size * offset) + mssV1] = 39.57;
-CONSTANTS[(constant_size * offset) + mssV2] = 9.871;
-CONSTANTS[(constant_size * offset) + mtV1] = 11.64;
-CONSTANTS[(constant_size * offset) + mtV2] = 34.77;
-CONSTANTS[(constant_size * offset) + mtD1] = 6.765;
-CONSTANTS[(constant_size * offset) + mtD2] = 8.552;
-CONSTANTS[(constant_size * offset) + mtV3] = 77.42;
-CONSTANTS[(constant_size * offset) + mtV4] = 5.955;
-STATES[(states_size * offset) +  m] = 0.007344121102;
-CONSTANTS[(constant_size * offset) + hssV1] = 82.9;
-CONSTANTS[(constant_size * offset) + hssV2] = 6.086;
-CONSTANTS[(constant_size * offset) + Ahf] = 0.99;
-STATES[(states_size * offset) +  hf] = 0.6981071913;
-STATES[(states_size * offset) +  hs] = 0.6980895801;
-CONSTANTS[(constant_size * offset) + GNa] = 75;
-CONSTANTS[(constant_size * offset) + shift_INa_inact] = 0;
-STATES[(states_size * offset) +  j] = 0.6979908432;
-STATES[(states_size * offset) +  hsp] = 0.4549485525;
-STATES[(states_size * offset) +  jp] = 0.6979245865;
-STATES[(states_size * offset) +  mL] = 0.0001882617273;
-CONSTANTS[(constant_size * offset) + thL] = 200;
-STATES[(states_size * offset) +  hL] = 0.5008548855;
-STATES[(states_size * offset) + hLp] = 0.2693065357;
-CONSTANTS[(constant_size * offset) + GNaL_b] = 0.019957499999999975;
-CONSTANTS[(constant_size * offset) + Gto_b] = 0.02;
-STATES[(states_size * offset) + a] = 0.001001097687;
-STATES[(states_size * offset) + iF] = 0.9995541745;
-STATES[(states_size * offset) + iS] = 0.5865061736;
-STATES[(states_size * offset) + ap] = 0.0005100862934;
-STATES[(states_size * offset) + iFp] = 0.9995541823;
-STATES[(states_size * offset) + iSp] = 0.6393399482;
-CONSTANTS[(constant_size * offset) + Kmn] = 0.002;
-CONSTANTS[(constant_size * offset) + k2n] = 1000;
-CONSTANTS[(constant_size * offset) + PCa_b] = 0.0001007;
-STATES[(states_size * offset) + d] = 2.34e-9;
-STATES[(states_size * offset) + ff] = 0.9999999909;
-STATES[(states_size * offset) + fs] = 0.9102412777;
-STATES[(states_size * offset) + fcaf] = 0.9999999909;
-STATES[(states_size * offset) + fcas] = 0.9998046777;
-STATES[(states_size * offset) + jca] = 0.9999738312;
-STATES[(states_size * offset) + ffp] = 0.9999999909;
-STATES[(states_size * offset) + fcafp] = 0.9999999909;
-STATES[(states_size * offset) + nca] = 0.002749414044;
-CONSTANTS[(constant_size * offset) + GKr_b] = 0.04658545454545456;
-STATES[(states_size * offset) + IC1] = 0.999637;
-STATES[(states_size * offset) + IC2] = 6.83208e-05;
-STATES[(states_size * offset) + C1] = 1.80145e-08;
-STATES[(states_size * offset) + C2] = 8.26619e-05;
-STATES[(states_size * offset) + O] = 0.00015551;
-STATES[(states_size * offset) + IO] = 5.67623e-05;
-STATES[(states_size * offset) + IObound] = 0;
-STATES[(states_size * offset) + Obound] = 0;
-STATES[(states_size * offset) + Cbound] = 0;
-STATES[(states_size * offset) + D] = 0;
-CONSTANTS[(constant_size * offset) + A1] = 0.0264;
-CONSTANTS[(constant_size * offset) + B1] = 4.631E-05;
-CONSTANTS[(constant_size * offset) + q1] = 4.843;
-CONSTANTS[(constant_size * offset) + A2] = 4.986E-06;
-CONSTANTS[(constant_size * offset) + B2] = -0.004226;
-CONSTANTS[(constant_size * offset) + q2] = 4.23;
-CONSTANTS[(constant_size * offset) + A3] = 0.001214;
-CONSTANTS[(constant_size * offset) + B3] = 0.008516;
-CONSTANTS[(constant_size * offset) + q3] = 4.962;
-CONSTANTS[(constant_size * offset) + A4] = 1.854E-05;
-CONSTANTS[(constant_size * offset) + B4] = -0.04641;
-CONSTANTS[(constant_size * offset) + q4] = 3.769;
-CONSTANTS[(constant_size * offset) + A11] = 0.0007868;
-CONSTANTS[(constant_size * offset) + B11] = 1.535E-08;
-CONSTANTS[(constant_size * offset) + q11] = 4.942;
-CONSTANTS[(constant_size * offset) + A21] = 5.455E-06;
-CONSTANTS[(constant_size * offset) + B21] = -0.1688;
-CONSTANTS[(constant_size * offset) + q21] = 4.156;
-CONSTANTS[(constant_size * offset) + A31] = 0.005509;
-CONSTANTS[(constant_size * offset) + B31] = 7.771E-09;
-CONSTANTS[(constant_size * offset) + q31] = 4.22;
-CONSTANTS[(constant_size * offset) + A41] = 0.001416;
-CONSTANTS[(constant_size * offset) + B41] = -0.02877;
-CONSTANTS[(constant_size * offset) + q41] = 1.459;
-CONSTANTS[(constant_size * offset) + A51] = 0.4492;
-CONSTANTS[(constant_size * offset) + B51] = 0.008595;
-CONSTANTS[(constant_size * offset) + q51] = 5;
-CONSTANTS[(constant_size * offset) + A52] = 0.3181;
-CONSTANTS[(constant_size * offset) + B52] = 3.613E-08;
-CONSTANTS[(constant_size * offset) + q52] = 4.663;
-CONSTANTS[(constant_size * offset) + A53] = 0.149;
-CONSTANTS[(constant_size * offset) + B53] = 0.004668;
-CONSTANTS[(constant_size * offset) + q53] = 2.412;
-CONSTANTS[(constant_size * offset) + A61] = 0.01241;
-CONSTANTS[(constant_size * offset) + B61] = 0.1725;
-CONSTANTS[(constant_size * offset) + q61] = 5.568;
-CONSTANTS[(constant_size * offset) + A62] = 0.3226;
-CONSTANTS[(constant_size * offset) + B62] = -0.0006575;
-CONSTANTS[(constant_size * offset) + q62] = 5;
-CONSTANTS[(constant_size * offset) + A63] = 0.008978;
-CONSTANTS[(constant_size * offset) + B63] = -0.02215;
-CONSTANTS[(constant_size * offset) + q63] = 5.682;
-CONSTANTS[(constant_size * offset) + Kmax] = 0;
-CONSTANTS[(constant_size * offset) + Ku] = 0;
-CONSTANTS[(constant_size * offset) + n] = 1;
-CONSTANTS[(constant_size * offset) + halfmax] = 1;
-CONSTANTS[(constant_size * offset) + Kt] = 0;
-CONSTANTS[(constant_size * offset) + Vhalf] = 1;
-CONSTANTS[(constant_size * offset) + Temp] = 37;
-CONSTANTS[(constant_size * offset) + GKs_b] = 0.006358000000000001;
-CONSTANTS[(constant_size * offset) + txs1_max] = 817.3;
-STATES[(states_size * offset) + xs1] = 0.2707758025;
-STATES[(states_size * offset) + xs2] = 0.0001928503426;
-CONSTANTS[(constant_size * offset) + GK1_b] = 0.3239783999999998;
-STATES[(states_size * offset) + xk1] = 0.9967597594;
-CONSTANTS[(constant_size * offset) + kna1] = 15;
-CONSTANTS[(constant_size * offset) + kna2] = 5;
-CONSTANTS[(constant_size * offset) + kna3] = 88.12;
-CONSTANTS[(constant_size * offset) + kasymm] = 12.5;
-CONSTANTS[(constant_size * offset) + wna] = 6e4;
-CONSTANTS[(constant_size * offset) + wca] = 6e4;
-CONSTANTS[(constant_size * offset) + wnaca] = 5e3;
-CONSTANTS[(constant_size * offset) + kcaon] = 1.5e6;
-CONSTANTS[(constant_size * offset) + kcaoff] = 5e3;
-CONSTANTS[(constant_size * offset) + qna] = 0.5224;
-CONSTANTS[(constant_size * offset) + qca] = 0.167;
-CONSTANTS[(constant_size * offset) + KmCaAct] = 150e-6;
-CONSTANTS[(constant_size * offset) + Gncx_b] = 0.0008;
-CONSTANTS[(constant_size * offset) + k1p] = 949.5;
-CONSTANTS[(constant_size * offset) + k1m] = 182.4;
-CONSTANTS[(constant_size * offset) + k2p] = 687.2;
-CONSTANTS[(constant_size * offset) + k2m] = 39.4;
-CONSTANTS[(constant_size * offset) + k3p] = 1899;
-CONSTANTS[(constant_size * offset) + k3m] = 79300;
-CONSTANTS[(constant_size * offset) + k4p] = 639;
-CONSTANTS[(constant_size * offset) + k4m] = 40;
-CONSTANTS[(constant_size * offset) + Knai0] = 9.073;
-CONSTANTS[(constant_size * offset) + Knao0] = 27.78;
-CONSTANTS[(constant_size * offset) + delta] = -0.155;
-CONSTANTS[(constant_size * offset) + Kki] = 0.5;
-CONSTANTS[(constant_size * offset) + Kko] = 0.3582;
-CONSTANTS[(constant_size * offset) + MgADP] = 0.05;
-CONSTANTS[(constant_size * offset) + MgATP] = 9.8;
-CONSTANTS[(constant_size * offset) + Kmgatp] = 1.698e-7;
-CONSTANTS[(constant_size * offset) + H] = 1e-7;
-CONSTANTS[(constant_size * offset) + eP] = 4.2;
-CONSTANTS[(constant_size * offset) + Khp] = 1.698e-7;
-CONSTANTS[(constant_size * offset) + Knap] = 224;
-CONSTANTS[(constant_size * offset) + Kxkur] = 292;
-CONSTANTS[(constant_size * offset) + Pnak_b] = 30;
-CONSTANTS[(constant_size * offset) + GKb_b] = 0.003;
-CONSTANTS[(constant_size * offset) + PNab] = 3.75e-10;
-CONSTANTS[(constant_size * offset) + PCab] = 2.5e-8;
-CONSTANTS[(constant_size * offset) + GpCa] = 0.0005;
-CONSTANTS[(constant_size * offset) + KmCap] = 0.0005;
-CONSTANTS[(constant_size * offset) + bt] = 4.75;
-STATES[(states_size * offset) + Jrelnp] = 2.5e-7;
-STATES[(states_size * offset) + Jrelp] = 3.12e-7;
-CONSTANTS[(constant_size * offset) + Jrel_scaling_factor] = 1.0;
-CONSTANTS[(constant_size * offset) + Jup_b] = 1.0;
-CONSTANTS[(constant_size * offset) + frt] = CONSTANTS[(constant_size * offset) + F]/( CONSTANTS[(constant_size * offset) + R]*CONSTANTS[(constant_size * offset) + T]);
-CONSTANTS[(constant_size * offset) + cmdnmax] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ?  CONSTANTS[(constant_size * offset) + cmdnmax_b]*1.30000 : CONSTANTS[(constant_size * offset) + cmdnmax_b]);
-CONSTANTS[(constant_size * offset) + Ahs] = 1.00000 - CONSTANTS[(constant_size * offset) + Ahf];
-CONSTANTS[(constant_size * offset) + thLp] =  3.00000*CONSTANTS[(constant_size * offset) + thL];
-CONSTANTS[(constant_size * offset) + GNaL] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ?  CONSTANTS[(constant_size * offset) + GNaL_b]*0.600000 : CONSTANTS[(constant_size * offset) + GNaL_b]);
-CONSTANTS[(constant_size * offset) + Gto] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ?  CONSTANTS[(constant_size * offset) + Gto_b]*4.00000 : CONSTANTS[(constant_size * offset) + celltype]==2.00000 ?  CONSTANTS[(constant_size * offset) + Gto_b]*4.00000 : CONSTANTS[(constant_size * offset) + Gto_b]);
-CONSTANTS[(constant_size * offset) + Aff] = 0.600000;
-CONSTANTS[(constant_size * offset) + PCa] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ?  CONSTANTS[(constant_size * offset) + PCa_b]*1.20000 : CONSTANTS[(constant_size * offset) + celltype]==2.00000 ?  CONSTANTS[(constant_size * offset) + PCa_b]*2.50000 : CONSTANTS[(constant_size * offset) + PCa_b]);
-CONSTANTS[(constant_size * offset) + tjca] = 75.0000;
-CONSTANTS[(constant_size * offset) + v0_CaL] = 0.000000;
-CONSTANTS[(constant_size * offset) + GKr] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ?  CONSTANTS[(constant_size * offset) + GKr_b]*1.30000 : CONSTANTS[(constant_size * offset) + celltype]==2.00000 ?  CONSTANTS[(constant_size * offset) + GKr_b]*0.800000 : CONSTANTS[(constant_size * offset) + GKr_b]);
-CONSTANTS[(constant_size * offset) + GKs] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ?  CONSTANTS[(constant_size * offset) + GKs_b]*1.40000 : CONSTANTS[(constant_size * offset) + GKs_b]);
-CONSTANTS[(constant_size * offset) + GK1] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ?  CONSTANTS[(constant_size * offset) + GK1_b]*1.20000 : CONSTANTS[(constant_size * offset) + celltype]==2.00000 ?  CONSTANTS[(constant_size * offset) + GK1_b]*1.30000 : CONSTANTS[(constant_size * offset) + GK1_b]);
-CONSTANTS[(constant_size * offset) + vcell] =  1000.00*3.14000*CONSTANTS[(constant_size * offset) + rad]*CONSTANTS[(constant_size * offset) + rad]*CONSTANTS[(constant_size * offset) + L];
-CONSTANTS[(constant_size * offset) + GKb] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ?  CONSTANTS[(constant_size * offset) + GKb_b]*0.600000 : CONSTANTS[(constant_size * offset) + GKb_b]);
-CONSTANTS[(constant_size * offset) + v0_Nab] = 0.000000;
-CONSTANTS[(constant_size * offset) + v0_Cab] = 0.000000;
-CONSTANTS[(constant_size * offset) + a_rel] =  0.500000*CONSTANTS[(constant_size * offset) + bt];
-CONSTANTS[(constant_size * offset) + btp] =  1.25000*CONSTANTS[(constant_size * offset) + bt];
-CONSTANTS[(constant_size * offset) + upScale] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ? 1.30000 : 1.00000);
-CONSTANTS[(constant_size * offset) + cnc] = 0.000000;
-CONSTANTS[(constant_size * offset) + ffrt] =  CONSTANTS[(constant_size * offset) + F]*CONSTANTS[(constant_size * offset) + frt];
-CONSTANTS[(constant_size * offset) + Afs] = 1.00000 - CONSTANTS[(constant_size * offset) + Aff];
-CONSTANTS[(constant_size * offset) + PCap] =  1.10000*CONSTANTS[(constant_size * offset) + PCa];
-CONSTANTS[(constant_size * offset) + PCaNa] =  0.00125000*CONSTANTS[(constant_size * offset) + PCa];
-CONSTANTS[(constant_size * offset) + PCaK] =  0.000357400*CONSTANTS[(constant_size * offset) + PCa];
-CONSTANTS[(constant_size * offset) + B_1] =  2.00000*CONSTANTS[(constant_size * offset) + frt];
-CONSTANTS[(constant_size * offset) + B_2] = CONSTANTS[(constant_size * offset) + frt];
-CONSTANTS[(constant_size * offset) + B_3] = CONSTANTS[(constant_size * offset) + frt];
-CONSTANTS[(constant_size * offset) + Ageo] =  2.00000*3.14000*CONSTANTS[(constant_size * offset) + rad]*CONSTANTS[(constant_size * offset) + rad]+ 2.00000*3.14000*CONSTANTS[(constant_size * offset) + rad]*CONSTANTS[(constant_size * offset) + L];
-CONSTANTS[(constant_size * offset) + B_Nab] = CONSTANTS[(constant_size * offset) + frt];
-CONSTANTS[(constant_size * offset) + B_Cab] =  2.00000*CONSTANTS[(constant_size * offset) + frt];
-CONSTANTS[(constant_size * offset) + a_relp] =  0.500000*CONSTANTS[(constant_size * offset) + btp];
-CONSTANTS[(constant_size * offset) + PCaNap] =  0.00125000*CONSTANTS[(constant_size * offset) + PCap];
-CONSTANTS[(constant_size * offset) + PCaKp] =  0.000357400*CONSTANTS[(constant_size * offset) + PCap];
-CONSTANTS[(constant_size * offset) + Acap] =  2.00000*CONSTANTS[(constant_size * offset) + Ageo];
-CONSTANTS[(constant_size * offset) + vmyo] =  0.680000*CONSTANTS[(constant_size * offset) + vcell];
-CONSTANTS[(constant_size * offset) + vnsr] =  0.0552000*CONSTANTS[(constant_size * offset) + vcell];
-CONSTANTS[(constant_size * offset) + vjsr] =  0.00480000*CONSTANTS[(constant_size * offset) + vcell];
-CONSTANTS[(constant_size * offset) + vss] =  0.0200000*CONSTANTS[(constant_size * offset) + vcell];
-CONSTANTS[(constant_size * offset) + h10_i] = CONSTANTS[(constant_size * offset) + kasymm]+1.00000+ (CONSTANTS[(constant_size * offset) + nao]/CONSTANTS[(constant_size * offset) + kna1])*(1.00000+CONSTANTS[(constant_size * offset) + nao]/CONSTANTS[(constant_size * offset) + kna2]);
-CONSTANTS[(constant_size * offset) + h11_i] = ( CONSTANTS[(constant_size * offset) + nao]*CONSTANTS[(constant_size * offset) + nao])/( CONSTANTS[(constant_size * offset) + h10_i]*CONSTANTS[(constant_size * offset) + kna1]*CONSTANTS[(constant_size * offset) + kna2]);
-CONSTANTS[(constant_size * offset) + h12_i] = 1.00000/CONSTANTS[(constant_size * offset) + h10_i];
-CONSTANTS[(constant_size * offset) + k1_i] =  CONSTANTS[(constant_size * offset) + h12_i]*CONSTANTS[(constant_size * offset) + cao]*CONSTANTS[(constant_size * offset) + kcaon];
-CONSTANTS[(constant_size * offset) + k2_i] = CONSTANTS[(constant_size * offset) + kcaoff];
-CONSTANTS[(constant_size * offset) + k5_i] = CONSTANTS[(constant_size * offset) + kcaoff];
-CONSTANTS[(constant_size * offset) + Gncx] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ?  CONSTANTS[(constant_size * offset) + Gncx_b]*1.10000 : CONSTANTS[(constant_size * offset) + celltype]==2.00000 ?  CONSTANTS[(constant_size * offset) + Gncx_b]*1.40000 : CONSTANTS[(constant_size * offset) + Gncx_b]);
-CONSTANTS[(constant_size * offset) + h10_ss] = CONSTANTS[(constant_size * offset) + kasymm]+1.00000+ (CONSTANTS[(constant_size * offset) + nao]/CONSTANTS[(constant_size * offset) + kna1])*(1.00000+CONSTANTS[(constant_size * offset) + nao]/CONSTANTS[(constant_size * offset) + kna2]);
-CONSTANTS[(constant_size * offset) + h11_ss] = ( CONSTANTS[(constant_size * offset) + nao]*CONSTANTS[(constant_size * offset) + nao])/( CONSTANTS[(constant_size * offset) + h10_ss]*CONSTANTS[(constant_size * offset) + kna1]*CONSTANTS[(constant_size * offset) + kna2]);
-CONSTANTS[(constant_size * offset) + h12_ss] = 1.00000/CONSTANTS[(constant_size * offset) + h10_ss];
-CONSTANTS[(constant_size * offset) + k1_ss] =  CONSTANTS[(constant_size * offset) + h12_ss]*CONSTANTS[(constant_size * offset) + cao]*CONSTANTS[(constant_size * offset) + kcaon];
-CONSTANTS[(constant_size * offset) + k2_ss] = CONSTANTS[(constant_size * offset) + kcaoff];
-CONSTANTS[(constant_size * offset) + k5_ss] = CONSTANTS[(constant_size * offset) + kcaoff];
-CONSTANTS[(constant_size * offset) + b1] =  CONSTANTS[(constant_size * offset) + k1m]*CONSTANTS[(constant_size * offset) + MgADP];
-CONSTANTS[(constant_size * offset) + a2] = CONSTANTS[(constant_size * offset) + k2p];
-CONSTANTS[(constant_size * offset) + a4] = (( CONSTANTS[(constant_size * offset) + k4p]*CONSTANTS[(constant_size * offset) + MgATP])/CONSTANTS[(constant_size * offset) + Kmgatp])/(1.00000+CONSTANTS[(constant_size * offset) + MgATP]/CONSTANTS[(constant_size * offset) + Kmgatp]);
-CONSTANTS[(constant_size * offset) + Pnak] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ?  CONSTANTS[(constant_size * offset) + Pnak_b]*0.900000 : CONSTANTS[(constant_size * offset) + celltype]==2.00000 ?  CONSTANTS[(constant_size * offset) + Pnak_b]*0.700000 : CONSTANTS[(constant_size * offset) + Pnak_b]);
+CONSTANTS[(206 * offset) +  celltype] = type;
+CONSTANTS[(206 * offset) +  nao] = 140;
+CONSTANTS[(206 * offset) +  cao] = 1.8;
+CONSTANTS[(206 * offset) +  ko] = 5.4;
+CONSTANTS[(206 * offset) +  R] = 8314;
+CONSTANTS[(206 * offset) +  T] = 310;
+CONSTANTS[(206 * offset) +  F] = 96485;
+CONSTANTS[(206 * offset) +  zna] = 1;
+CONSTANTS[(206 * offset) +  zca] = 2;
+CONSTANTS[(206 * offset) +  zk] = 1;
+CONSTANTS[(206 * offset) +  L] = 0.01;
+CONSTANTS[(206 * offset) +  rad] = 0.0011;
+STATES[(49 * offset) + V] = -88.00190465;
+CONSTANTS[(206 * offset) +  stim_start] = 10;
+CONSTANTS[(206 * offset) +  stim_end] = 100000000000000000;
+CONSTANTS[(206 * offset) +  amp] = -80;
+CONSTANTS[(206 * offset) +  BCL] = 1000;
+CONSTANTS[(206 * offset) +  duration] = 0.5;
+CONSTANTS[(206 * offset) +  KmCaMK] = 0.15;
+CONSTANTS[(206 * offset) +  aCaMK] = 0.05;
+CONSTANTS[(206 * offset) +  bCaMK] = 0.00068;
+CONSTANTS[(206 * offset) +  CaMKo] = 0.05;
+CONSTANTS[(206 * offset) +  KmCaM] = 0.0015;
+STATES[(49 * offset) + CaMKt] = 0.0125840447;
+STATES[(49 * offset) + cass] = 8.49e-05;
+CONSTANTS[(206 * offset) +  cmdnmax_b] = 0.05;
+CONSTANTS[(206 * offset) +  kmcmdn] = 0.00238;
+CONSTANTS[(206 * offset) +  trpnmax] = 0.07;
+CONSTANTS[(206 * offset) +  kmtrpn] = 0.0005;
+CONSTANTS[(206 * offset) +  BSRmax] = 0.047;
+CONSTANTS[(206 * offset) +  KmBSR] = 0.00087;
+CONSTANTS[(206 * offset) +  BSLmax] = 1.124;
+CONSTANTS[(206 * offset) +  KmBSL] = 0.0087;
+CONSTANTS[(206 * offset) +  csqnmax] = 10;
+CONSTANTS[(206 * offset) +  kmcsqn] = 0.8;
+STATES[(49 * offset) + nai] = 7.268004498;
+STATES[(49 * offset) + nass] = 7.268089977;
+STATES[(49 * offset) + ki] = 144.6555918;
+STATES[(49 * offset) + kss] = 144.6555651;
+STATES[(49 * offset) + cansr] = 1.619574538;
+STATES[(49 * offset) + cajsr] = 1.571234014;
+STATES[(49 * offset) + cai] = 8.6e-05;
+CONSTANTS[(206 * offset) +  cm] = 1;
+CONSTANTS[(206 * offset) +  PKNa] = 0.01833;
+CONSTANTS[(206 * offset) +  mssV1] = 39.57;
+CONSTANTS[(206 * offset) +  mssV2] = 9.871;
+CONSTANTS[(206 * offset) +  mtV1] = 11.64;
+CONSTANTS[(206 * offset) +  mtV2] = 34.77;
+CONSTANTS[(206 * offset) +  mtD1] = 6.765;
+CONSTANTS[(206 * offset) +  mtD2] = 8.552;
+CONSTANTS[(206 * offset) +  mtV3] = 77.42;
+CONSTANTS[(206 * offset) +  mtV4] = 5.955;
+STATES[(49 * offset) + m] = 0.007344121102;
+CONSTANTS[(206 * offset) +  hssV1] = 82.9;
+CONSTANTS[(206 * offset) +  hssV2] = 6.086;
+CONSTANTS[(206 * offset) +  Ahf] = 0.99;
+STATES[(49 * offset) + hf] = 0.6981071913;
+STATES[(49 * offset) + hs] = 0.6980895801;
+CONSTANTS[(206 * offset) +  GNa] = 75;
+CONSTANTS[(206 * offset) +  shift_INa_inact] = 0;
+STATES[(49 * offset) + j] = 0.6979908432;
+STATES[(49 * offset) + hsp] = 0.4549485525;
+STATES[(49 * offset) + jp] = 0.6979245865;
+STATES[(49 * offset) + mL] = 0.0001882617273;
+CONSTANTS[(206 * offset) +  thL] = 200;
+STATES[(49 * offset) + hL] = 0.5008548855;
+STATES[(49 * offset) + hLp] = 0.2693065357;
+CONSTANTS[(206 * offset) +  GNaL_b] = 0.019957499999999975;
+CONSTANTS[(206 * offset) +  Gto_b] = 0.02;
+STATES[(49 * offset) + a] = 0.001001097687;
+STATES[(49 * offset) + iF] = 0.9995541745;
+STATES[(49 * offset) + iS] = 0.5865061736;
+STATES[(49 * offset) + ap] = 0.0005100862934;
+STATES[(49 * offset) + iFp] = 0.9995541823;
+STATES[(49 * offset) + iSp] = 0.6393399482;
+CONSTANTS[(206 * offset) +  Kmn] = 0.002;
+CONSTANTS[(206 * offset) +  k2n] = 1000;
+CONSTANTS[(206 * offset) +  PCa_b] = 0.0001007;
+STATES[(49 * offset) + d] = 2.34e-9;
+STATES[(49 * offset) + ff] = 0.9999999909;
+STATES[(49 * offset) + fs] = 0.9102412777;
+STATES[(49 * offset) + fcaf] = 0.9999999909;
+STATES[(49 * offset) + fcas] = 0.9998046777;
+STATES[(49 * offset) + jca] = 0.9999738312;
+STATES[(49 * offset) + ffp] = 0.9999999909;
+STATES[(49 * offset) + fcafp] = 0.9999999909;
+STATES[(49 * offset) + nca] = 0.002749414044;
+CONSTANTS[(206 * offset) +  GKr_b] = 0.04658545454545456;
+STATES[(49 * offset) + IC1] = 0.999637;
+STATES[(49 * offset) + IC2] = 6.83208e-05;
+STATES[(49 * offset) + C1] = 1.80145e-08;
+STATES[(49 * offset) + C2] = 8.26619e-05;
+STATES[(49 * offset) + O] = 0.00015551;
+STATES[(49 * offset) + IO] = 5.67623e-05;
+STATES[(49 * offset) + IObound] = 0;
+STATES[(49 * offset) + Obound] = 0;
+STATES[(49 * offset) + Cbound] = 0;
+STATES[(49 * offset) + D] = 0;
+CONSTANTS[(206 * offset) +  A1] = 0.0264;
+CONSTANTS[(206 * offset) +  B1] = 4.631E-05;
+CONSTANTS[(206 * offset) +  q1] = 4.843;
+CONSTANTS[(206 * offset) +  A2] = 4.986E-06;
+CONSTANTS[(206 * offset) +  B2] = -0.004226;
+CONSTANTS[(206 * offset) +  q2] = 4.23;
+CONSTANTS[(206 * offset) +  A3] = 0.001214;
+CONSTANTS[(206 * offset) +  B3] = 0.008516;
+CONSTANTS[(206 * offset) +  q3] = 4.962;
+CONSTANTS[(206 * offset) +  A4] = 1.854E-05;
+CONSTANTS[(206 * offset) +  B4] = -0.04641;
+CONSTANTS[(206 * offset) +  q4] = 3.769;
+CONSTANTS[(206 * offset) +  A11] = 0.0007868;
+CONSTANTS[(206 * offset) +  B11] = 1.535E-08;
+CONSTANTS[(206 * offset) +  q11] = 4.942;
+CONSTANTS[(206 * offset) +  A21] = 5.455E-06;
+CONSTANTS[(206 * offset) +  B21] = -0.1688;
+CONSTANTS[(206 * offset) +  q21] = 4.156;
+CONSTANTS[(206 * offset) +  A31] = 0.005509;
+CONSTANTS[(206 * offset) +  B31] = 7.771E-09;
+CONSTANTS[(206 * offset) +  q31] = 4.22;
+CONSTANTS[(206 * offset) +  A41] = 0.001416;
+CONSTANTS[(206 * offset) +  B41] = -0.02877;
+CONSTANTS[(206 * offset) +  q41] = 1.459;
+CONSTANTS[(206 * offset) +  A51] = 0.4492;
+CONSTANTS[(206 * offset) +  B51] = 0.008595;
+CONSTANTS[(206 * offset) +  q51] = 5;
+CONSTANTS[(206 * offset) +  A52] = 0.3181;
+CONSTANTS[(206 * offset) +  B52] = 3.613E-08;
+CONSTANTS[(206 * offset) +  q52] = 4.663;
+CONSTANTS[(206 * offset) +  A53] = 0.149;
+CONSTANTS[(206 * offset) +  B53] = 0.004668;
+CONSTANTS[(206 * offset) +  q53] = 2.412;
+CONSTANTS[(206 * offset) +  A61] = 0.01241;
+CONSTANTS[(206 * offset) +  B61] = 0.1725;
+CONSTANTS[(206 * offset) +  q61] = 5.568;
+CONSTANTS[(206 * offset) +  A62] = 0.3226;
+CONSTANTS[(206 * offset) +  B62] = -0.0006575;
+CONSTANTS[(206 * offset) +  q62] = 5;
+CONSTANTS[(206 * offset) +  A63] = 0.008978;
+CONSTANTS[(206 * offset) +  B63] = -0.02215;
+CONSTANTS[(206 * offset) +  q63] = 5.682;
+CONSTANTS[(206 * offset) +  Kmax] = 0;
+CONSTANTS[(206 * offset) +  Ku] = 0;
+CONSTANTS[(206 * offset) +  n] = 1;
+CONSTANTS[(206 * offset) +  halfmax] = 1;
+CONSTANTS[(206 * offset) +  Kt] = 0;
+CONSTANTS[(206 * offset) +  Vhalf] = 1;
+CONSTANTS[(206 * offset) +  Temp] = 37;
+CONSTANTS[(206 * offset) +  GKs_b] = 0.006358000000000001;
+CONSTANTS[(206 * offset) +  txs1_max] = 817.3;
+STATES[(49 * offset) + xs1] = 0.2707758025;
+STATES[(49 * offset) + xs2] = 0.0001928503426;
+CONSTANTS[(206 * offset) +  GK1_b] = 0.3239783999999998;
+STATES[(49 * offset) + xk1] = 0.9967597594;
+CONSTANTS[(206 * offset) +  kna1] = 15;
+CONSTANTS[(206 * offset) +  kna2] = 5;
+CONSTANTS[(206 * offset) +  kna3] = 88.12;
+CONSTANTS[(206 * offset) +  kasymm] = 12.5;
+CONSTANTS[(206 * offset) +  wna] = 6e4;
+CONSTANTS[(206 * offset) +  wca] = 6e4;
+CONSTANTS[(206 * offset) +  wnaca] = 5e3;
+CONSTANTS[(206 * offset) +  kcaon] = 1.5e6;
+CONSTANTS[(206 * offset) +  kcaoff] = 5e3;
+CONSTANTS[(206 * offset) +  qna] = 0.5224;
+CONSTANTS[(206 * offset) +  qca] = 0.167;
+CONSTANTS[(206 * offset) +  KmCaAct] = 150e-6;
+CONSTANTS[(206 * offset) +  Gncx_b] = 0.0008;
+CONSTANTS[(206 * offset) +  k1p] = 949.5;
+CONSTANTS[(206 * offset) +  k1m] = 182.4;
+CONSTANTS[(206 * offset) +  k2p] = 687.2;
+CONSTANTS[(206 * offset) +  k2m] = 39.4;
+CONSTANTS[(206 * offset) +  k3p] = 1899;
+CONSTANTS[(206 * offset) +  k3m] = 79300;
+CONSTANTS[(206 * offset) +  k4p] = 639;
+CONSTANTS[(206 * offset) +  k4m] = 40;
+CONSTANTS[(206 * offset) +  Knai0] = 9.073;
+CONSTANTS[(206 * offset) +  Knao0] = 27.78;
+CONSTANTS[(206 * offset) +  delta] = -0.155;
+CONSTANTS[(206 * offset) +  Kki] = 0.5;
+CONSTANTS[(206 * offset) +  Kko] = 0.3582;
+CONSTANTS[(206 * offset) +  MgADP] = 0.05;
+CONSTANTS[(206 * offset) +  MgATP] = 9.8;
+CONSTANTS[(206 * offset) +  Kmgatp] = 1.698e-7;
+CONSTANTS[(206 * offset) +  H] = 1e-7;
+CONSTANTS[(206 * offset) +  eP] = 4.2;
+CONSTANTS[(206 * offset) +  Khp] = 1.698e-7;
+CONSTANTS[(206 * offset) +  Knap] = 224;
+CONSTANTS[(206 * offset) +  Kxkur] = 292;
+CONSTANTS[(206 * offset) +  Pnak_b] = 30;
+CONSTANTS[(206 * offset) +  GKb_b] = 0.003;
+CONSTANTS[(206 * offset) +  PNab] = 3.75e-10;
+CONSTANTS[(206 * offset) +  PCab] = 2.5e-8;
+CONSTANTS[(206 * offset) +  GpCa] = 0.0005;
+CONSTANTS[(206 * offset) +  KmCap] = 0.0005;
+CONSTANTS[(206 * offset) +  bt] = 4.75;
+STATES[(49 * offset) + Jrelnp] = 2.5e-7;
+STATES[(49 * offset) + Jrelp] = 3.12e-7;
+CONSTANTS[(206 * offset) +  Jrel_scaling_factor] = 1.0;
+CONSTANTS[(206 * offset) +  Jup_b] = 1.0;
+CONSTANTS[(206 * offset) +  frt] = CONSTANTS[(206 * offset) +  F]/( CONSTANTS[(206 * offset) +  R]*CONSTANTS[(206 * offset) +  T]);
+CONSTANTS[(206 * offset) +  cmdnmax] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ?  CONSTANTS[(206 * offset) +  cmdnmax_b]*1.30000 : CONSTANTS[(206 * offset) +  cmdnmax_b]);
+CONSTANTS[(206 * offset) +  Ahs] = 1.00000 - CONSTANTS[(206 * offset) +  Ahf];
+CONSTANTS[(206 * offset) +  thLp] =  3.00000*CONSTANTS[(206 * offset) +  thL];
+CONSTANTS[(206 * offset) +  GNaL] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ?  CONSTANTS[(206 * offset) +  GNaL_b]*0.600000 : CONSTANTS[(206 * offset) +  GNaL_b]);
+CONSTANTS[(206 * offset) +  Gto] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ?  CONSTANTS[(206 * offset) +  Gto_b]*4.00000 : CONSTANTS[(206 * offset) +  celltype]==2.00000 ?  CONSTANTS[(206 * offset) +  Gto_b]*4.00000 : CONSTANTS[(206 * offset) +  Gto_b]);
+CONSTANTS[(206 * offset) +  Aff] = 0.600000;
+CONSTANTS[(206 * offset) +  PCa] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ?  CONSTANTS[(206 * offset) +  PCa_b]*1.20000 : CONSTANTS[(206 * offset) +  celltype]==2.00000 ?  CONSTANTS[(206 * offset) +  PCa_b]*2.50000 : CONSTANTS[(206 * offset) +  PCa_b]);
+CONSTANTS[(206 * offset) +  tjca] = 75.0000;
+CONSTANTS[(206 * offset) +  v0_CaL] = 0.000000;
+CONSTANTS[(206 * offset) +  GKr] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ?  CONSTANTS[(206 * offset) +  GKr_b]*1.30000 : CONSTANTS[(206 * offset) +  celltype]==2.00000 ?  CONSTANTS[(206 * offset) +  GKr_b]*0.800000 : CONSTANTS[(206 * offset) +  GKr_b]);
+CONSTANTS[(206 * offset) +  GKs] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ?  CONSTANTS[(206 * offset) +  GKs_b]*1.40000 : CONSTANTS[(206 * offset) +  GKs_b]);
+CONSTANTS[(206 * offset) +  GK1] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ?  CONSTANTS[(206 * offset) +  GK1_b]*1.20000 : CONSTANTS[(206 * offset) +  celltype]==2.00000 ?  CONSTANTS[(206 * offset) +  GK1_b]*1.30000 : CONSTANTS[(206 * offset) +  GK1_b]);
+CONSTANTS[(206 * offset) +  vcell] =  1000.00*3.14000*CONSTANTS[(206 * offset) +  rad]*CONSTANTS[(206 * offset) +  rad]*CONSTANTS[(206 * offset) +  L];
+CONSTANTS[(206 * offset) +  GKb] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ?  CONSTANTS[(206 * offset) +  GKb_b]*0.600000 : CONSTANTS[(206 * offset) +  GKb_b]);
+CONSTANTS[(206 * offset) +  v0_Nab] = 0.000000;
+CONSTANTS[(206 * offset) +  v0_Cab] = 0.000000;
+CONSTANTS[(206 * offset) +  a_rel] =  0.500000*CONSTANTS[(206 * offset) +  bt];
+CONSTANTS[(206 * offset) +  btp] =  1.25000*CONSTANTS[(206 * offset) +  bt];
+CONSTANTS[(206 * offset) +  upScale] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ? 1.30000 : 1.00000);
+CONSTANTS[(206 * offset) +  cnc] = 0.000000;
+CONSTANTS[(206 * offset) +  ffrt] =  CONSTANTS[(206 * offset) +  F]*CONSTANTS[(206 * offset) +  frt];
+CONSTANTS[(206 * offset) +  Afs] = 1.00000 - CONSTANTS[(206 * offset) +  Aff];
+CONSTANTS[(206 * offset) +  PCap] =  1.10000*CONSTANTS[(206 * offset) +  PCa];
+CONSTANTS[(206 * offset) +  PCaNa] =  0.00125000*CONSTANTS[(206 * offset) +  PCa];
+CONSTANTS[(206 * offset) +  PCaK] =  0.000357400*CONSTANTS[(206 * offset) +  PCa];
+CONSTANTS[(206 * offset) +  B_1] =  2.00000*CONSTANTS[(206 * offset) +  frt];
+CONSTANTS[(206 * offset) +  B_2] = CONSTANTS[(206 * offset) +  frt];
+CONSTANTS[(206 * offset) +  B_3] = CONSTANTS[(206 * offset) +  frt];
+CONSTANTS[(206 * offset) +  Ageo] =  2.00000*3.14000*CONSTANTS[(206 * offset) +  rad]*CONSTANTS[(206 * offset) +  rad]+ 2.00000*3.14000*CONSTANTS[(206 * offset) +  rad]*CONSTANTS[(206 * offset) +  L];
+CONSTANTS[(206 * offset) +  B_Nab] = CONSTANTS[(206 * offset) +  frt];
+CONSTANTS[(206 * offset) +  B_Cab] =  2.00000*CONSTANTS[(206 * offset) +  frt];
+CONSTANTS[(206 * offset) +  a_relp] =  0.500000*CONSTANTS[(206 * offset) +  btp];
+CONSTANTS[(206 * offset) +  PCaNap] =  0.00125000*CONSTANTS[(206 * offset) +  PCap];
+CONSTANTS[(206 * offset) +  PCaKp] =  0.000357400*CONSTANTS[(206 * offset) +  PCap];
+CONSTANTS[(206 * offset) +  Acap] =  2.00000*CONSTANTS[(206 * offset) +  Ageo];
+CONSTANTS[(206 * offset) +  vmyo] =  0.680000*CONSTANTS[(206 * offset) +  vcell];
+CONSTANTS[(206 * offset) +  vnsr] =  0.0552000*CONSTANTS[(206 * offset) +  vcell];
+CONSTANTS[(206 * offset) +  vjsr] =  0.00480000*CONSTANTS[(206 * offset) +  vcell];
+CONSTANTS[(206 * offset) +  vss] =  0.0200000*CONSTANTS[(206 * offset) +  vcell];
+CONSTANTS[(206 * offset) +  h10_i] = CONSTANTS[(206 * offset) +  kasymm]+1.00000+ (CONSTANTS[(206 * offset) +  nao]/CONSTANTS[(206 * offset) +  kna1])*(1.00000+CONSTANTS[(206 * offset) +  nao]/CONSTANTS[(206 * offset) +  kna2]);
+CONSTANTS[(206 * offset) +  h11_i] = ( CONSTANTS[(206 * offset) +  nao]*CONSTANTS[(206 * offset) +  nao])/( CONSTANTS[(206 * offset) +  h10_i]*CONSTANTS[(206 * offset) +  kna1]*CONSTANTS[(206 * offset) +  kna2]);
+CONSTANTS[(206 * offset) +  h12_i] = 1.00000/CONSTANTS[(206 * offset) +  h10_i];
+CONSTANTS[(206 * offset) +  k1_i] =  CONSTANTS[(206 * offset) +  h12_i]*CONSTANTS[(206 * offset) +  cao]*CONSTANTS[(206 * offset) +  kcaon];
+CONSTANTS[(206 * offset) +  k2_i] = CONSTANTS[(206 * offset) +  kcaoff];
+CONSTANTS[(206 * offset) +  k5_i] = CONSTANTS[(206 * offset) +  kcaoff];
+CONSTANTS[(206 * offset) +  Gncx] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ?  CONSTANTS[(206 * offset) +  Gncx_b]*1.10000 : CONSTANTS[(206 * offset) +  celltype]==2.00000 ?  CONSTANTS[(206 * offset) +  Gncx_b]*1.40000 : CONSTANTS[(206 * offset) +  Gncx_b]);
+CONSTANTS[(206 * offset) +  h10_ss] = CONSTANTS[(206 * offset) +  kasymm]+1.00000+ (CONSTANTS[(206 * offset) +  nao]/CONSTANTS[(206 * offset) +  kna1])*(1.00000+CONSTANTS[(206 * offset) +  nao]/CONSTANTS[(206 * offset) +  kna2]);
+CONSTANTS[(206 * offset) +  h11_ss] = ( CONSTANTS[(206 * offset) +  nao]*CONSTANTS[(206 * offset) +  nao])/( CONSTANTS[(206 * offset) +  h10_ss]*CONSTANTS[(206 * offset) +  kna1]*CONSTANTS[(206 * offset) +  kna2]);
+CONSTANTS[(206 * offset) +  h12_ss] = 1.00000/CONSTANTS[(206 * offset) +  h10_ss];
+CONSTANTS[(206 * offset) +  k1_ss] =  CONSTANTS[(206 * offset) +  h12_ss]*CONSTANTS[(206 * offset) +  cao]*CONSTANTS[(206 * offset) +  kcaon];
+CONSTANTS[(206 * offset) +  k2_ss] = CONSTANTS[(206 * offset) +  kcaoff];
+CONSTANTS[(206 * offset) +  k5_ss] = CONSTANTS[(206 * offset) +  kcaoff];
+CONSTANTS[(206 * offset) +  b1] =  CONSTANTS[(206 * offset) +  k1m]*CONSTANTS[(206 * offset) +  MgADP];
+CONSTANTS[(206 * offset) +  a2] = CONSTANTS[(206 * offset) +  k2p];
+CONSTANTS[(206 * offset) +  a4] = (( CONSTANTS[(206 * offset) +  k4p]*CONSTANTS[(206 * offset) +  MgATP])/CONSTANTS[(206 * offset) +  Kmgatp])/(1.00000+CONSTANTS[(206 * offset) +  MgATP]/CONSTANTS[(206 * offset) +  Kmgatp]);
+CONSTANTS[(206 * offset) +  Pnak] = (CONSTANTS[(206 * offset) +  celltype]==1.00000 ?  CONSTANTS[(206 * offset) +  Pnak_b]*0.900000 : CONSTANTS[(206 * offset) +  celltype]==2.00000 ?  CONSTANTS[(206 * offset) +  Pnak_b]*0.700000 : CONSTANTS[(206 * offset) +  Pnak_b]);
 }
 
-__device__ void applyDrugEffect(double *CONSTANTS, double conc, double *ic50, double epsilon, int offset)
+__device__ void applyDrugEffect(double *CONSTANTS, double conc, double *hill, int offset)
 {
-short constant_size = 206;
-CONSTANTS[(constant_size * offset) + GK1_b] = CONSTANTS[(constant_size * offset) + GK1_b] * ((ic50[(offset*14) + 2] > 10E-14 && ic50[(offset*14) + 3] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 2],ic50[(offset*14) + 3])) : 1.);
-CONSTANTS[(constant_size * offset) + GKs_b] = CONSTANTS[(constant_size * offset) + GKs_b] * ((ic50[(offset*14) + 4] > 10E-14 && ic50[(offset*14) + 5] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 4],ic50[(offset*14) + 5])) : 1.);
-CONSTANTS[(constant_size * offset) + GNaL_b] = CONSTANTS[(constant_size * offset) + GNaL_b] * ((ic50[(offset*14) + 8] > 10E-14 && ic50[(offset*14) + 9] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 8],ic50[(offset*14) + 9])) : 1.);
-CONSTANTS[(constant_size * offset) + GNa] = CONSTANTS[(constant_size * offset) + GNa] * ((ic50[(offset*14) + 6] > 10E-14 && ic50[(offset*14) + 7] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 6],ic50[(offset*14) + 7])) : 1.);
-CONSTANTS[(constant_size * offset) + Gto_b] = CONSTANTS[(constant_size * offset) + Gto_b] * ((ic50[(offset*14) + 10] > 10E-14 && ic50[(offset*14) + 11] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 10],ic50[(offset*14) + 11])) : 1.);
-CONSTANTS[(constant_size * offset) + PCa_b] = CONSTANTS[(constant_size * offset) + PCa_b] * ( (ic50[(offset*14) + 0] > 10E-14 && ic50[(offset*14) + 1] > 10E-14) ? 1./(1.+pow(conc/ic50[(offset*14) + 0],ic50[(offset*14) + 1])) : 1.);
+CONSTANTS[(206 * offset) +  PCa_b] *= ((hill[0] > 10E-14 && hill[1] > 10E-14) ? 1./(1.+pow(conc/hill[0],hill[1])) : 1.);
+CONSTANTS[(206 * offset) +  GK1_b] *= ((hill[2] > 10E-14 && hill[3] > 10E-14) ? 1./(1.+pow(conc/hill[2],hill[3])) : 1.);
+CONSTANTS[(206 * offset) +  GKs_b] *= ((hill[4] > 10E-14 && hill[5] > 10E-14) ? 1./(1.+pow(conc/hill[4],hill[5])) : 1.);
+CONSTANTS[(206 * offset) +  GNa] *= ((hill[6] > 10E-14 && hill[7] > 10E-14) ? 1./(1.+pow(conc/hill[6],hill[7])) : 1.);
+CONSTANTS[(206 * offset) +  GNaL_b] *= ((hill[8] > 10E-14 && hill[9] > 10E-14) ? 1./(1.+pow(conc/hill[8],hill[9])) : 1.);
+CONSTANTS[(206 * offset) +  Gto_b] *= ((hill[10] > 10E-14 && hill[11] > 10E-14) ? 1./(1.+pow(conc/hill[10],hill[11])) : 1.);
+//CONSTANTS[(206 * offset) +  GKr_b] = CONSTANTS[(206 * offset) +  GKr_b] * ((hill[12] > 10E-14 && hill[13] > 10E-14) ? 1./(1.+pow(conc/hill[12],hill[13])) : 1.);
 }
 
 __device__ void ___applyHERGBinding(double *CONSTANTS, double *STATES, double conc, double *herg, int offset)
 {
-short constant_size = 206;
-short states_size = 49;
-if(conc > 10E-14){
-CONSTANTS[(constant_size * offset) + Kmax] = herg[(6 * offset) + 0];
-CONSTANTS[(constant_size * offset) + Ku] = herg[(6 * offset) + 1];
-CONSTANTS[(constant_size * offset) + n] = herg[(6 * offset) + 2];
-CONSTANTS[(constant_size * offset) + halfmax] = herg[(6 * offset) + 3];
-CONSTANTS[(constant_size * offset) + Vhalf] = herg[(6 * offset) + 4];
-CONSTANTS[(constant_size * offset) + cnc] = conc;
-STATES[(states_size * offset) + D] = CONSTANTS[(constant_size * offset) + cnc];
-}
+CONSTANTS[(206 * offset) +  Kmax] = herg[0];
+CONSTANTS[(206 * offset) +  Ku] = herg[1];
+CONSTANTS[(206 * offset) +  n] = herg[2];
+CONSTANTS[(206 * offset) +  halfmax] = herg[3];
+CONSTANTS[(206 * offset) +  Vhalf] = herg[4];
+CONSTANTS[(206 * offset) +  cnc] = conc;
+STATES[(49 * offset) + D] = CONSTANTS[(206 * offset) +  cnc];
+CONSTANTS[(206 * offset) +  Kt] = 0.000035;
 }
 
-// void ohara_rudy_cipa_v1_2017::initConsts()
-// {
-// 	___initConsts(0.);
-// }
-
-// void ohara_rudy_cipa_v1_2017::initConsts(double type)
-// {
-// 	___initConsts(type);
-// }
-
-__device__ void initConsts(double *CONSTANTS, double *STATES, double type, double conc, double *ic50, double *herg, double *cvar, bool is_dutta, bool is_cvar, double bcl, double epsilon, int offset)
+__device__ void initConsts(double *CONSTANTS, double *STATES, double type, double conc, double *hill, double *herg, double *cvar, bool is_dutta, bool is_cvar, double bcl, double epsilon, int offset)
 {
-	___initConsts(CONSTANTS, STATES, type, bcl, offset);
-	// mpi_printf(0,"Celltype: %lf\n", CONSTANTS[celltype]);
-	// mpi_printf(0,"Control %lf %lf %lf %lf %lf\n", CONSTANTS[PCa], CONSTANTS[GK1], CONSTANTS[GKs], CONSTANTS[GNaL], CONSTANTS[GKr]);
-	applyDrugEffect(CONSTANTS, conc, ic50, epsilon, offset);
-	// mpi_printf(0,"After drug %lf %lf %lf %lf %lf\n", CONSTANTS[PCa], CONSTANTS[GK1], CONSTANTS[GKs], CONSTANTS[GNaL], CONSTANTS[GKr]);
-	// mpi_printf(0,"Control hERG binding %lf %lf %lf %lf %lf %lf\n", CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], CONSTANTS[cnc]);
-	___applyHERGBinding(CONSTANTS, STATES, conc, herg, offset);
-	// mpi_printf(0,"Bootstrapped hERG binding %lf %lf %lf %lf %lf %lf\n", CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], CONSTANTS[cnc]);
+  ___initConsts(CONSTANTS, STATES, type, bcl, offset);
+//   mpi_printf(0,"Celltype: %lf\n", CONSTANTS[celltype]);
+//   mpi_printf(0,"Concentration: %lf\n", conc);
+//   mpi_printf(0,"Control: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
+//       CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b]);
+  applyDrugEffect(CONSTANTS, conc, hill, offset);
+//   mpi_printf(0,"Hill data:\n");
+//   for(int idx = 0; idx < 14; idx++){
+//     mpi_printf(0,"%lf,", hill[idx]);
+//   }
+//   mpi_printf(0,"\n");
+//   mpi_printf(0,"After drug: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
+//       CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b]);
+//   mpi_printf(0,"Control hERG binding: \nKmax:%lf \nKu:%lf \nn:%lf \nhalfmax:%lf \nVhalf:%lf \nD:%lf \nKt:%lf\n", 
+//       CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], STATES[(49 * offset) + D], CONSTANTS[Kt]);
+  if( conc > 10E-14 ) ___applyHERGBinding(CONSTANTS, STATES, conc, herg, offset);
+//   mpi_printf(0,"hERG data:\n");
+//   for(int idx = 0; idx < 6; idx++){
+//     mpi_printf(0,"%lf,", herg[idx]);
+//   }
+//   mpi_printf(0,"\n");
+//   mpi_printf(0,"Bootstraped hERG binding: \nKmax:%lf \nKu:%lf \nn:%lf \nhalfmax:%lf \nVhalf:%lf \nD:%lf \nKt:%lf\n",
+//       CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], STATES[(49 * offset) + D], CONSTANTS[Kt]);
 }
 
 __device__ void computeRates( double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC, int offset )
 {
-    short algebraic_size = 200;
-    short constant_size = 206;
-    short states_size = 49;
-    short rates_size = 49;
-    ALGEBRAIC[(algebraic_size * offset) + hLss] = 1.00000/(1.00000+exp((STATES[(states_size * offset) + V]+87.6100)/7.48800));
-    ALGEBRAIC[(algebraic_size * offset) + hLssp] = 1.00000/(1.00000+exp((STATES[(states_size * offset) + V]+93.8100)/7.48800));
-    ALGEBRAIC[(algebraic_size * offset) + mss] = 1.00000/(1.00000+exp(- (STATES[(states_size * offset) + V]+CONSTANTS[mssV1])/CONSTANTS[(constant_size * offset) + mssV2]));
-    ALGEBRAIC[(algebraic_size * offset) + tm] = 1.00000/( CONSTANTS[(constant_size * offset) + mtD1]*exp((STATES[(states_size * offset) + V]+CONSTANTS[(constant_size * offset) + mtV1])/CONSTANTS[(constant_size * offset) + mtV2])+ CONSTANTS[(constant_size * offset) + mtD2]*exp(- (STATES[(states_size * offset) + V]+CONSTANTS[(constant_size * offset) + mtV3])/CONSTANTS[(constant_size * offset) + mtV4]));
-    ALGEBRAIC[(algebraic_size * offset) + hss] = 1.00000/(1.00000+exp(((STATES[(states_size * offset) + V]+CONSTANTS[(constant_size * offset) + hssV1]) - CONSTANTS[(constant_size * offset) + shift_INa_inact])/CONSTANTS[(constant_size * offset) + hssV2]));
-    ALGEBRAIC[(algebraic_size * offset) + thf] = 1.00000/( 1.43200e-05*exp(- ((STATES[(states_size * offset) + V]+1.19600) - CONSTANTS[(constant_size * offset) + shift_INa_inact])/6.28500)+ 6.14900*exp(((STATES[(states_size * offset) + V]+0.509600) - CONSTANTS[(constant_size * offset) + shift_INa_inact])/20.2700));
-    ALGEBRAIC[(algebraic_size * offset) + ths] = 1.00000/( 0.00979400*exp(- ((STATES[(states_size * offset) + V]+17.9500) - CONSTANTS[(constant_size * offset) + shift_INa_inact])/28.0500)+ 0.334300*exp(((STATES[(states_size * offset) + V]+5.73000) - CONSTANTS[(constant_size * offset) + shift_INa_inact])/56.6600));
-    ALGEBRAIC[(algebraic_size * offset) + ass] = 1.00000/(1.00000+exp(- (STATES[(states_size * offset) + V] - 14.3400)/14.8200));
-    ALGEBRAIC[(algebraic_size * offset) + ta] = 1.05150/(1.00000/( 1.20890*(1.00000+exp(- (STATES[(states_size * offset) + V] - 18.4099)/29.3814)))+3.50000/(1.00000+exp((STATES[(states_size * offset) + V]+100.000)/29.3814)));
-    ALGEBRAIC[(algebraic_size * offset) + dss] = 1.00000/(1.00000+exp(- (STATES[(states_size * offset) + V]+3.94000)/4.23000));
-    ALGEBRAIC[(algebraic_size * offset) + td] = 0.600000+1.00000/(exp( - 0.0500000*(STATES[(states_size * offset) + V]+6.00000))+exp( 0.0900000*(STATES[(states_size * offset) + V]+14.0000)));
-    ALGEBRAIC[(algebraic_size * offset) + fss] = 1.00000/(1.00000+exp((STATES[(states_size * offset) + V]+19.5800)/3.69600));
-    ALGEBRAIC[(algebraic_size * offset) + tff] = 7.00000+1.00000/( 0.00450000*exp(- (STATES[(states_size * offset) + V]+20.0000)/10.0000)+ 0.00450000*exp((STATES[(states_size * offset) + V]+20.0000)/10.0000));
-    ALGEBRAIC[(algebraic_size * offset) + tfs] = 1000.00+1.00000/( 3.50000e-05*exp(- (STATES[(states_size * offset) + V]+5.00000)/4.00000)+ 3.50000e-05*exp((STATES[(states_size * offset) + V]+5.00000)/6.00000));
-    ALGEBRAIC[(algebraic_size * offset) + fcass] = ALGEBRAIC[(algebraic_size * offset) + fss];
-    ALGEBRAIC[(algebraic_size * offset) + km2n] =  STATES[(states_size * offset) + jca]*1.00000;
-    ALGEBRAIC[(algebraic_size * offset) + anca] = 1.00000/(CONSTANTS[(constant_size * offset) + k2n]/ALGEBRAIC[(algebraic_size * offset) + km2n]+pow(1.00000+CONSTANTS[(constant_size * offset) + Kmn]/STATES[(states_size * offset) + cass], 4.00000));
-    ALGEBRAIC[(algebraic_size * offset) + xs1ss] = 1.00000/(1.00000+exp(- (STATES[(states_size * offset) + V]+11.6000)/8.93200));
-    ALGEBRAIC[(algebraic_size * offset) + txs1] = CONSTANTS[(constant_size * offset) + txs1_max]+1.00000/( 0.000232600*exp((STATES[(states_size * offset) + V]+48.2800)/17.8000)+ 0.00129200*exp(- (STATES[(states_size * offset) + V]+210.000)/230.000));
-    ALGEBRAIC[(algebraic_size * offset) + xk1ss] = 1.00000/(1.00000+exp(- (STATES[(states_size * offset) + V]+ 2.55380*CONSTANTS[(constant_size * offset) + ko]+144.590)/( 1.56920*CONSTANTS[(constant_size * offset) + ko]+3.81150)));
-    ALGEBRAIC[(algebraic_size * offset) + txk1] = 122.200/(exp(- (STATES[(states_size * offset) + V]+127.200)/20.3600)+exp((STATES[(states_size * offset) + V]+236.800)/69.3300));
-    ALGEBRAIC[(algebraic_size * offset) + CaMKb] = ( CONSTANTS[(constant_size * offset) + CaMKo]*(1.00000 - STATES[(states_size * offset) + CaMKt]))/(1.00000+CONSTANTS[(constant_size * offset) + KmCaM]/STATES[(states_size * offset) + cass]);
-    ALGEBRAIC[(algebraic_size * offset) + jss] = ALGEBRAIC[(algebraic_size * offset) + hss];
-    ALGEBRAIC[(algebraic_size * offset) + tj] = 2.03800+1.00000/( 0.0213600*exp(- ((STATES[(states_size * offset) + V]+100.600) - CONSTANTS[(constant_size * offset) + shift_INa_inact])/8.28100)+ 0.305200*exp(((STATES[(states_size * offset) + V]+0.994100) - CONSTANTS[(constant_size * offset) + shift_INa_inact])/38.4500));
-    ALGEBRAIC[(algebraic_size * offset) + assp] = 1.00000/(1.00000+exp(- (STATES[(states_size * offset) + V] - 24.3400)/14.8200));
-    ALGEBRAIC[(algebraic_size * offset) + tfcaf] = 7.00000+1.00000/( 0.0400000*exp(- (STATES[(states_size * offset) + V] - 4.00000)/7.00000)+ 0.0400000*exp((STATES[(states_size * offset) + V] - 4.00000)/7.00000));
-    ALGEBRAIC[(algebraic_size * offset) + tfcas] = 100.000+1.00000/( 0.000120000*exp(- STATES[(states_size * offset) + V]/3.00000)+ 0.000120000*exp(STATES[(states_size * offset) + V]/7.00000));
-    ALGEBRAIC[(algebraic_size * offset) + tffp] =  2.50000*ALGEBRAIC[(algebraic_size * offset) + tff];
-    ALGEBRAIC[(algebraic_size * offset) + xs2ss] = ALGEBRAIC[(algebraic_size * offset) + xs1ss];
-    ALGEBRAIC[(algebraic_size * offset) + txs2] = 1.00000/( 0.0100000*exp((STATES[(states_size * offset) + V] - 50.0000)/20.0000)+ 0.0193000*exp(- (STATES[(states_size * offset) + V]+66.5400)/31.0000));
-    ALGEBRAIC[(algebraic_size * offset) + hssp] = 1.00000/(1.00000+exp(((STATES[(states_size * offset) + V]+89.1000) - CONSTANTS[(constant_size * offset) + shift_INa_inact])/6.08600));
-    ALGEBRAIC[(algebraic_size * offset) + thsp] =  3.00000*ALGEBRAIC[(algebraic_size * offset) + ths];
-    ALGEBRAIC[(algebraic_size * offset) + tjp] =  1.46000*ALGEBRAIC[(algebraic_size * offset) + tj];
-    ALGEBRAIC[(algebraic_size * offset) + mLss] = 1.00000/(1.00000+exp(- (STATES[(states_size * offset) + V]+42.8500)/5.26400));
-    ALGEBRAIC[(algebraic_size * offset) + tmL] = ALGEBRAIC[(algebraic_size * offset) + tm];
-    ALGEBRAIC[(algebraic_size * offset) + tfcafp] =  2.50000*ALGEBRAIC[(algebraic_size * offset) + tfcaf];
-    ALGEBRAIC[(algebraic_size * offset) + iss] = 1.00000/(1.00000+exp((STATES[(states_size * offset) + V]+43.9400)/5.71100));
-    ALGEBRAIC[(algebraic_size * offset) + delta_epi] = (CONSTANTS[(constant_size * offset) + celltype]==1.00000 ? 1.00000 - 0.950000/(1.00000+exp((STATES[(states_size * offset) + V]+70.0000)/5.00000)) : 1.00000);
-    ALGEBRAIC[(algebraic_size * offset) + tiF_b] = 4.56200+1.00000/( 0.393300*exp(- (STATES[(states_size * offset) + V]+100.000)/100.000)+ 0.0800400*exp((STATES[(states_size * offset) + V]+50.0000)/16.5900));
-    ALGEBRAIC[(algebraic_size * offset) + tiF] =  ALGEBRAIC[(algebraic_size * offset) + tiF_b]*ALGEBRAIC[(algebraic_size * offset) + delta_epi];
-    ALGEBRAIC[(algebraic_size * offset) + tiS_b] = 23.6200+1.00000/( 0.00141600*exp(- (STATES[(states_size * offset) + V]+96.5200)/59.0500)+ 1.78000e-08*exp((STATES[(states_size * offset) + V]+114.100)/8.07900));
-    ALGEBRAIC[(algebraic_size * offset) + tiS] =  ALGEBRAIC[(algebraic_size * offset) + tiS_b]*ALGEBRAIC[(algebraic_size * offset) + delta_epi];
-    ALGEBRAIC[(algebraic_size * offset) + dti_develop] = 1.35400+0.000100000/(exp((STATES[(states_size * offset) + V] - 167.400)/15.8900)+exp(- (STATES[(states_size * offset) + V] - 12.2300)/0.215400));
-    ALGEBRAIC[(algebraic_size * offset) + dti_recover] = 1.00000 - 0.500000/(1.00000+exp((STATES[(states_size * offset) + V]+70.0000)/20.0000));
-    ALGEBRAIC[(algebraic_size * offset) + tiFp] =  ALGEBRAIC[(algebraic_size * offset) + dti_develop]*ALGEBRAIC[(algebraic_size * offset) + dti_recover]*ALGEBRAIC[(algebraic_size * offset) + tiF];
-    ALGEBRAIC[(algebraic_size * offset) + tiSp] =  ALGEBRAIC[(algebraic_size * offset) + dti_develop]*ALGEBRAIC[(algebraic_size * offset) + dti_recover]*ALGEBRAIC[(algebraic_size * offset) + tiS];
-    ALGEBRAIC[(algebraic_size * offset) + f] =  CONSTANTS[(constant_size * offset) + Aff]*STATES[(states_size * offset) + ff]+ CONSTANTS[(constant_size * offset) + Afs]*STATES[(states_size * offset) + fs];
-    ALGEBRAIC[(algebraic_size * offset) + Afcaf] = 0.300000+0.600000/(1.00000+exp((STATES[(states_size * offset) + V] - 10.0000)/10.0000));
-    ALGEBRAIC[(algebraic_size * offset) + Afcas] = 1.00000 - ALGEBRAIC[(algebraic_size * offset) + Afcaf];
-    ALGEBRAIC[(algebraic_size * offset) + fca] =  ALGEBRAIC[(algebraic_size * offset) + Afcaf]*STATES[(states_size * offset) + fcaf]+ ALGEBRAIC[(algebraic_size * offset) + Afcas]*STATES[(states_size * offset) + fcas];
-    ALGEBRAIC[(algebraic_size * offset) + fp] =  CONSTANTS[(constant_size * offset) + Aff]*STATES[(states_size * offset) + ffp]+ CONSTANTS[(constant_size * offset) + Afs]*STATES[(states_size * offset) + fs];
-    ALGEBRAIC[(algebraic_size * offset) + fcap] =  ALGEBRAIC[(algebraic_size * offset) + Afcaf]*STATES[(states_size * offset) + fcafp]+ ALGEBRAIC[(algebraic_size * offset) + Afcas]*STATES[(states_size * offset) + fcas];
-    ALGEBRAIC[(algebraic_size * offset) + vfrt] =  STATES[(states_size * offset) + V]*CONSTANTS[(constant_size * offset) + frt];
-    ALGEBRAIC[(algebraic_size * offset) + A_1] = ( 4.00000*CONSTANTS[(constant_size * offset) + ffrt]*( STATES[(states_size * offset) + cass]*exp( 2.00000*ALGEBRAIC[(algebraic_size * offset) + vfrt]) -  0.341000*CONSTANTS[(constant_size * offset) + cao]))/CONSTANTS[(constant_size * offset) + B_1];
-    ALGEBRAIC[(algebraic_size * offset) + U_1] =  CONSTANTS[(constant_size * offset) + B_1]*(STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) + v0_CaL]);
-    ALGEBRAIC[(algebraic_size * offset) + PhiCaL] = (- 1.00000e-07<=ALGEBRAIC[(algebraic_size * offset) + U_1]&&ALGEBRAIC[(algebraic_size * offset) + U_1]<=1.00000e-07 ?  ALGEBRAIC[(algebraic_size * offset) + A_1]*(1.00000 -  0.500000*ALGEBRAIC[(algebraic_size * offset) + U_1]) : ( ALGEBRAIC[(algebraic_size * offset) + A_1]*ALGEBRAIC[(algebraic_size * offset) + U_1])/(exp(ALGEBRAIC[(algebraic_size * offset) + U_1]) - 1.00000));
-    ALGEBRAIC[(algebraic_size * offset) + CaMKa] = ALGEBRAIC[(algebraic_size * offset) + CaMKb]+STATES[(states_size * offset) + CaMKt];
-    ALGEBRAIC[(algebraic_size * offset) + fICaLp] = 1.00000/(1.00000+CONSTANTS[(constant_size * offset) + KmCaMK]/ALGEBRAIC[(algebraic_size * offset) + CaMKa]);
-    ALGEBRAIC[(algebraic_size * offset) + ICaL] =  (1.00000 - ALGEBRAIC[(algebraic_size * offset) + fICaLp])*CONSTANTS[(constant_size * offset) + PCa]*ALGEBRAIC[(algebraic_size * offset) + PhiCaL]*STATES[(states_size * offset) + d]*( ALGEBRAIC[(algebraic_size * offset) + f]*(1.00000 - STATES[(states_size * offset) + nca])+ STATES[(states_size * offset) + jca]*ALGEBRAIC[(algebraic_size * offset) + fca]*STATES[(states_size * offset) + nca])+ ALGEBRAIC[(algebraic_size * offset) + fICaLp]*CONSTANTS[(constant_size * offset) + PCap]*ALGEBRAIC[(algebraic_size * offset) + PhiCaL]*STATES[(states_size * offset) + d]*( ALGEBRAIC[(algebraic_size * offset) + fp]*(1.00000 - STATES[(states_size * offset) + nca])+ STATES[(states_size * offset) + jca]*ALGEBRAIC[(algebraic_size * offset) + fcap]*STATES[(states_size * offset) + nca]);
-    ALGEBRAIC[(algebraic_size * offset) + Jrel_inf_temp] = ( CONSTANTS[(constant_size * offset) + a_rel]*- ALGEBRAIC[(algebraic_size * offset) + ICaL])/(1.00000+ 1.00000*pow(1.50000/STATES[(states_size * offset) + cajsr], 8.00000));
-    ALGEBRAIC[(algebraic_size * offset) + Jrel_inf] = (CONSTANTS[(constant_size * offset) + celltype]==2.00000 ?  ALGEBRAIC[(algebraic_size * offset) + Jrel_inf_temp]*1.70000 : ALGEBRAIC[(algebraic_size * offset) + Jrel_inf_temp]);
-    ALGEBRAIC[(algebraic_size * offset) + tau_rel_temp] = CONSTANTS[(constant_size * offset) + bt]/(1.00000+0.0123000/STATES[(states_size * offset) + cajsr]);
-    ALGEBRAIC[(algebraic_size * offset) + tau_rel] = (ALGEBRAIC[(algebraic_size * offset) + tau_rel_temp]<0.00100000 ? 0.00100000 : ALGEBRAIC[(algebraic_size * offset) + tau_rel_temp]);
-    ALGEBRAIC[(algebraic_size * offset) + Jrel_temp] = ( CONSTANTS[(constant_size * offset) + a_relp]*- ALGEBRAIC[(algebraic_size * offset) + ICaL])/(1.00000+pow(1.50000/STATES[(states_size * offset) + cajsr], 8.00000));
-    ALGEBRAIC[(algebraic_size * offset) + Jrel_infp] = (CONSTANTS[(constant_size * offset) + celltype]==2.00000 ?  ALGEBRAIC[(algebraic_size * offset) + Jrel_temp]*1.70000 : ALGEBRAIC[(algebraic_size * offset) + Jrel_temp]);
-    ALGEBRAIC[(algebraic_size * offset) + tau_relp_temp] = CONSTANTS[(constant_size * offset) + btp]/(1.00000+0.0123000/STATES[(states_size * offset) + cajsr]);
-    ALGEBRAIC[(algebraic_size * offset) + tau_relp] = (ALGEBRAIC[(algebraic_size * offset) + tau_relp_temp]<0.00100000 ? 0.00100000 : ALGEBRAIC[(algebraic_size * offset) + tau_relp_temp]);
-    ALGEBRAIC[(algebraic_size * offset) + EK] =  (( CONSTANTS[(constant_size * offset) + R]*CONSTANTS[(constant_size * offset) + T])/CONSTANTS[(constant_size * offset) + F])*log(CONSTANTS[(constant_size * offset) + ko]/STATES[(states_size * offset) + ki]);
-    ALGEBRAIC[(algebraic_size * offset) + AiF] = 1.00000/(1.00000+exp((STATES[(states_size * offset) + V] - 213.600)/151.200));
-    ALGEBRAIC[(algebraic_size * offset) + AiS] = 1.00000 - ALGEBRAIC[(algebraic_size * offset) + AiF];
-    ALGEBRAIC[(algebraic_size * offset) + i] =  ALGEBRAIC[(algebraic_size * offset) + AiF]*STATES[(states_size * offset) + iF]+ ALGEBRAIC[(algebraic_size * offset) + AiS]*STATES[(states_size * offset) + iS];
-    ALGEBRAIC[(algebraic_size * offset) + ip] =  ALGEBRAIC[(algebraic_size * offset) + AiF]*STATES[(states_size * offset) + iFp]+ ALGEBRAIC[(algebraic_size * offset) + AiS]*STATES[(states_size * offset) + iSp];
-    ALGEBRAIC[(algebraic_size * offset) + fItop] = 1.00000/(1.00000+CONSTANTS[(constant_size * offset) + KmCaMK]/ALGEBRAIC[(algebraic_size * offset) + CaMKa]);
-    ALGEBRAIC[(algebraic_size * offset) + Ito] =  CONSTANTS[(constant_size * offset) + Gto]*(STATES[(states_size * offset) + V] - ALGEBRAIC[(algebraic_size * offset) + EK])*( (1.00000 - ALGEBRAIC[(algebraic_size * offset) + fItop])*STATES[(states_size * offset) + a]*ALGEBRAIC[(algebraic_size * offset) + i]+ ALGEBRAIC[(algebraic_size * offset) + fItop]*STATES[(states_size * offset) + ap]*ALGEBRAIC[(algebraic_size * offset) + ip]);
-    ALGEBRAIC[(algebraic_size * offset) + IKr] =  CONSTANTS[(constant_size * offset) + GKr]* pow((CONSTANTS[(constant_size * offset) + ko]/5.40000), 1.0 / 2)*STATES[(states_size * offset) + O]*(STATES[(states_size * offset) + V] - ALGEBRAIC[(algebraic_size * offset) + EK]);
-    ALGEBRAIC[(algebraic_size * offset) + EKs] =  (( CONSTANTS[(constant_size * offset) + R]*CONSTANTS[(constant_size * offset) + T])/CONSTANTS[(constant_size * offset) + F])*log((CONSTANTS[(constant_size * offset) + ko]+ CONSTANTS[(constant_size * offset) + PKNa]*CONSTANTS[(constant_size * offset) + nao])/(STATES[(states_size * offset) + ki]+ CONSTANTS[(constant_size * offset) + PKNa]*STATES[(states_size * offset) + nai]));
-    ALGEBRAIC[(algebraic_size * offset) + KsCa] = 1.00000+0.600000/(1.00000+pow(3.80000e-05/STATES[(states_size * offset) + cai], 1.40000));
-    ALGEBRAIC[(algebraic_size * offset) + IKs] =  CONSTANTS[(constant_size * offset) + GKs]*ALGEBRAIC[(algebraic_size * offset) + KsCa]*STATES[(states_size * offset) + xs1]*STATES[(states_size * offset) + xs2]*(STATES[(states_size * offset) + V] - ALGEBRAIC[(algebraic_size * offset) + EKs]);
-    ALGEBRAIC[(algebraic_size * offset) + rk1] = 1.00000/(1.00000+exp(((STATES[(states_size * offset) + V]+105.800) -  2.60000*CONSTANTS[(constant_size * offset) + ko])/9.49300));
-    ALGEBRAIC[(algebraic_size * offset) + IK1] =  CONSTANTS[(constant_size * offset) + GK1]* pow(CONSTANTS[(constant_size * offset) + ko], 1.0 / 2)*ALGEBRAIC[(algebraic_size * offset) + rk1]*STATES[(states_size * offset) + xk1]*(STATES[(states_size * offset) + V] - ALGEBRAIC[(algebraic_size * offset) + EK]);
-    ALGEBRAIC[(algebraic_size * offset) + Knao] =  CONSTANTS[(constant_size * offset) + Knao0]*exp(( (1.00000 - CONSTANTS[(constant_size * offset) + delta])*STATES[(states_size * offset) + V]*CONSTANTS[(constant_size * offset) + F])/( 3.00000*CONSTANTS[(constant_size * offset) + R]*CONSTANTS[(constant_size * offset) + T]));
-    ALGEBRAIC[(algebraic_size * offset) + a3] = ( CONSTANTS[(constant_size * offset) + k3p]*pow(CONSTANTS[(constant_size * offset) + ko]/CONSTANTS[(constant_size * offset) + Kko], 2.00000))/((pow(1.00000+CONSTANTS[(constant_size * offset) + nao]/ALGEBRAIC[(algebraic_size * offset) + Knao], 3.00000)+pow(1.00000+CONSTANTS[(constant_size * offset) + ko]/CONSTANTS[(constant_size * offset) + Kko], 2.00000)) - 1.00000);
-    ALGEBRAIC[(algebraic_size * offset) + P] = CONSTANTS[(constant_size * offset) + eP]/(1.00000+CONSTANTS[(constant_size * offset) + H]/CONSTANTS[(constant_size * offset) + Khp]+STATES[(states_size * offset) + nai]/CONSTANTS[(constant_size * offset) + Knap]+STATES[(states_size * offset) + ki]/CONSTANTS[(constant_size * offset) + Kxkur]);
-    ALGEBRAIC[(algebraic_size * offset) + b3] = ( CONSTANTS[(constant_size * offset) + k3m]*ALGEBRAIC[(algebraic_size * offset) + P]*CONSTANTS[(constant_size * offset) + H])/(1.00000+CONSTANTS[(constant_size * offset) + MgATP]/CONSTANTS[(constant_size * offset) + Kmgatp]);
-    ALGEBRAIC[(algebraic_size * offset) + Knai] =  CONSTANTS[(constant_size * offset) + Knai0]*exp(( CONSTANTS[(constant_size * offset) + delta]*STATES[(states_size * offset) + V]*CONSTANTS[(constant_size * offset) + F])/( 3.00000*CONSTANTS[(constant_size * offset) + R]*CONSTANTS[(constant_size * offset) + T]));
-    ALGEBRAIC[(algebraic_size * offset) + a1] = ( CONSTANTS[(constant_size * offset) + k1p]*pow(STATES[(states_size * offset) + nai]/ALGEBRAIC[(algebraic_size * offset) + Knai], 3.00000))/((pow(1.00000+STATES[(states_size * offset) + nai]/ALGEBRAIC[(algebraic_size * offset) + Knai], 3.00000)+pow(1.00000+STATES[(states_size * offset) + ki]/CONSTANTS[(constant_size * offset) + Kki], 2.00000)) - 1.00000);
-    ALGEBRAIC[(algebraic_size * offset) + b2] = ( CONSTANTS[(constant_size * offset) + k2m]*pow(CONSTANTS[(constant_size * offset) + nao]/ALGEBRAIC[(algebraic_size * offset) + Knao], 3.00000))/((pow(1.00000+CONSTANTS[(constant_size * offset) + nao]/ALGEBRAIC[(algebraic_size * offset) + Knao], 3.00000)+pow(1.00000+CONSTANTS[(constant_size * offset) + ko]/CONSTANTS[(constant_size * offset) + Kko], 2.00000)) - 1.00000);
-    ALGEBRAIC[(algebraic_size * offset) + b4] = ( CONSTANTS[(constant_size * offset) + k4m]*pow(STATES[(states_size * offset) + ki]/CONSTANTS[(constant_size * offset) + Kki], 2.00000))/((pow(1.00000+STATES[(states_size * offset) + nai]/ALGEBRAIC[(algebraic_size * offset) + Knai], 3.00000)+pow(1.00000+STATES[(states_size * offset) + ki]/CONSTANTS[(constant_size * offset) + Kki], 2.00000)) - 1.00000);
-    ALGEBRAIC[(algebraic_size * offset) + x1] =  CONSTANTS[(constant_size * offset) + a4]*ALGEBRAIC[(algebraic_size * offset) + a1]*CONSTANTS[(constant_size * offset) + a2]+ ALGEBRAIC[(algebraic_size * offset) + b2]*ALGEBRAIC[(algebraic_size * offset) + b4]*ALGEBRAIC[(algebraic_size * offset) + b3]+ CONSTANTS[(constant_size * offset) + a2]*ALGEBRAIC[(algebraic_size * offset) + b4]*ALGEBRAIC[(algebraic_size * offset) + b3]+ ALGEBRAIC[(algebraic_size * offset) + b3]*ALGEBRAIC[(algebraic_size * offset) + a1]*CONSTANTS[(constant_size * offset) + a2];
-    ALGEBRAIC[(algebraic_size * offset) + x2] =  ALGEBRAIC[(algebraic_size * offset) + b2]*CONSTANTS[(constant_size * offset) + b1]*ALGEBRAIC[(algebraic_size * offset) + b4]+ ALGEBRAIC[(algebraic_size * offset) + a1]*CONSTANTS[(constant_size * offset) + a2]*ALGEBRAIC[(algebraic_size * offset) + a3]+ ALGEBRAIC[(algebraic_size * offset) + a3]*CONSTANTS[(constant_size * offset) + b1]*ALGEBRAIC[(algebraic_size * offset) + b4]+ CONSTANTS[(constant_size * offset) + a2]*ALGEBRAIC[(algebraic_size * offset) + a3]*ALGEBRAIC[(algebraic_size * offset) + b4];
-    ALGEBRAIC[(algebraic_size * offset) + x3] =  CONSTANTS[(constant_size * offset) + a2]*ALGEBRAIC[(algebraic_size * offset) + a3]*CONSTANTS[(constant_size * offset) + a4]+ ALGEBRAIC[(algebraic_size * offset) + b3]*ALGEBRAIC[(algebraic_size * offset) + b2]*CONSTANTS[(constant_size * offset) + b1]+ ALGEBRAIC[(algebraic_size * offset) + b2]*CONSTANTS[(constant_size * offset) + b1]*CONSTANTS[(constant_size * offset) + a4]+ ALGEBRAIC[(algebraic_size * offset) + a3]*CONSTANTS[(constant_size * offset) + a4]*CONSTANTS[(constant_size * offset) + b1];
-    ALGEBRAIC[(algebraic_size * offset) + x4] =  ALGEBRAIC[(algebraic_size * offset) + b4]*ALGEBRAIC[(algebraic_size * offset) + b3]*ALGEBRAIC[(algebraic_size * offset) + b2]+ ALGEBRAIC[(algebraic_size * offset) + a3]*CONSTANTS[(constant_size * offset) + a4]*ALGEBRAIC[(algebraic_size * offset) + a1]+ ALGEBRAIC[(algebraic_size * offset) + b2]*CONSTANTS[(constant_size * offset) + a4]*ALGEBRAIC[(algebraic_size * offset) + a1]+ ALGEBRAIC[(algebraic_size * offset) + b3]*ALGEBRAIC[(algebraic_size * offset) + b2]*ALGEBRAIC[(algebraic_size * offset) + a1];
-    ALGEBRAIC[(algebraic_size * offset) + E1] = ALGEBRAIC[(algebraic_size * offset) + x1]/(ALGEBRAIC[(algebraic_size * offset) + x1]+ALGEBRAIC[(algebraic_size * offset) + x2]+ALGEBRAIC[(algebraic_size * offset) + x3]+ALGEBRAIC[(algebraic_size * offset) + x4]);
-    ALGEBRAIC[(algebraic_size * offset) + E2] = ALGEBRAIC[(algebraic_size * offset) + x2]/(ALGEBRAIC[(algebraic_size * offset) + x1]+ALGEBRAIC[(algebraic_size * offset) + x2]+ALGEBRAIC[(algebraic_size * offset) + x3]+ALGEBRAIC[(algebraic_size * offset) + x4]);
-    ALGEBRAIC[(algebraic_size * offset) + JnakNa] =  3.00000*( ALGEBRAIC[(algebraic_size * offset) + E1]*ALGEBRAIC[(algebraic_size * offset) + a3] -  ALGEBRAIC[(algebraic_size * offset) + E2]*ALGEBRAIC[(algebraic_size * offset) + b3]);
-    ALGEBRAIC[(algebraic_size * offset) + E3] = ALGEBRAIC[(algebraic_size * offset) + x3]/(ALGEBRAIC[(algebraic_size * offset) + x1]+ALGEBRAIC[(algebraic_size * offset) + x2]+ALGEBRAIC[(algebraic_size * offset) + x3]+ALGEBRAIC[(algebraic_size * offset) + x4]);
-    ALGEBRAIC[(algebraic_size * offset) + E4] = ALGEBRAIC[(algebraic_size * offset) + x4]/(ALGEBRAIC[(algebraic_size * offset) + x1]+ALGEBRAIC[(algebraic_size * offset) + x2]+ALGEBRAIC[(algebraic_size * offset) + x3]+ALGEBRAIC[(algebraic_size * offset) + x4]);
-    ALGEBRAIC[(algebraic_size * offset) + JnakK] =  2.00000*( ALGEBRAIC[(algebraic_size * offset) + E4]*CONSTANTS[(constant_size * offset) + b1] -  ALGEBRAIC[(algebraic_size * offset) + E3]*ALGEBRAIC[(algebraic_size * offset) + a1]);
-    ALGEBRAIC[(algebraic_size * offset) + INaK] =  CONSTANTS[(constant_size * offset) + Pnak]*( CONSTANTS[(constant_size * offset) + zna]*ALGEBRAIC[(algebraic_size * offset) + JnakNa]+ CONSTANTS[(constant_size * offset) + zk]*ALGEBRAIC[(algebraic_size * offset) + JnakK]);
-    ALGEBRAIC[(algebraic_size * offset) + xkb] = 1.00000/(1.00000+exp(- (STATES[(states_size * offset) + V] - 14.4800)/18.3400));
-    ALGEBRAIC[(algebraic_size * offset) + IKb] =  CONSTANTS[(constant_size * offset) + GKb]*ALGEBRAIC[(algebraic_size * offset) + xkb]*(STATES[(states_size * offset) + V] - ALGEBRAIC[(algebraic_size * offset) + EK]);
-    ALGEBRAIC[(algebraic_size * offset) + Istim] = (TIME>=CONSTANTS[(constant_size * offset) + stim_start]&&TIME<=CONSTANTS[(constant_size * offset) + stim_end]&&(TIME - CONSTANTS[(constant_size * offset) + stim_start]) -  floor((TIME - CONSTANTS[(constant_size * offset) + stim_start])/CONSTANTS[(constant_size * offset) + BCL])*CONSTANTS[(constant_size * offset) + BCL]<=CONSTANTS[(constant_size * offset) + duration] ? CONSTANTS[(constant_size * offset) + amp] : 0.000000);
-    ALGEBRAIC[(algebraic_size * offset) + JdiffK] = (STATES[(states_size * offset) + kss] - STATES[(states_size * offset) + ki])/2.00000;
-    ALGEBRAIC[(algebraic_size * offset) + A_3] = ( 0.750000*CONSTANTS[(constant_size * offset) + ffrt]*( STATES[(states_size * offset) + kss]*exp(ALGEBRAIC[(algebraic_size * offset) + vfrt]) - CONSTANTS[(constant_size * offset) + ko]))/CONSTANTS[(constant_size * offset) + B_3];
-    ALGEBRAIC[(algebraic_size * offset) + U_3] =  CONSTANTS[(constant_size * offset) + B_3]*(STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) + v0_CaL]);
-    ALGEBRAIC[(algebraic_size * offset) + PhiCaK] = (- 1.00000e-07<=ALGEBRAIC[(algebraic_size * offset) + U_3]&&ALGEBRAIC[(algebraic_size * offset) + U_3]<=1.00000e-07 ?  ALGEBRAIC[(algebraic_size * offset) + A_3]*(1.00000 -  0.500000*ALGEBRAIC[(algebraic_size * offset) + U_3]) : ( ALGEBRAIC[(algebraic_size * offset) + A_3]*ALGEBRAIC[(algebraic_size * offset) + U_3])/(exp(ALGEBRAIC[(algebraic_size * offset) + U_3]) - 1.00000));
-    ALGEBRAIC[(algebraic_size * offset) + ICaK] =  (1.00000 - ALGEBRAIC[(algebraic_size * offset) + fICaLp])*CONSTANTS[(constant_size * offset) + PCaK]*ALGEBRAIC[(algebraic_size * offset) + PhiCaK]*STATES[(states_size * offset) + d]*( ALGEBRAIC[(algebraic_size * offset) + f]*(1.00000 - STATES[(states_size * offset) + nca])+ STATES[(states_size * offset) + jca]*ALGEBRAIC[(algebraic_size * offset) + fca]*STATES[(states_size * offset) + nca])+ ALGEBRAIC[(algebraic_size * offset) + fICaLp]*CONSTANTS[(constant_size * offset) + PCaKp]*ALGEBRAIC[(algebraic_size * offset) + PhiCaK]*STATES[(states_size * offset) + d]*( ALGEBRAIC[(algebraic_size * offset) + fp]*(1.00000 - STATES[(states_size * offset) + nca])+ STATES[(states_size * offset) + jca]*ALGEBRAIC[(algebraic_size * offset) + fcap]*STATES[(states_size * offset) + nca]);
-    ALGEBRAIC[(algebraic_size * offset) + ENa] =  (( CONSTANTS[(constant_size * offset) + R]*CONSTANTS[(constant_size * offset) + T])/CONSTANTS[(constant_size * offset) + F])*log(CONSTANTS[(constant_size * offset) + nao]/STATES[(states_size * offset) + nai]);
-    ALGEBRAIC[(algebraic_size * offset) + h] =  CONSTANTS[(constant_size * offset) + Ahf]*STATES[(states_size * offset) + hf]+ CONSTANTS[(constant_size * offset) + Ahs]*STATES[(states_size * offset) + hs];
-    ALGEBRAIC[(algebraic_size * offset) + hp] =  CONSTANTS[(constant_size * offset) + Ahf]*STATES[(states_size * offset) + hf]+ CONSTANTS[(constant_size * offset) + Ahs]*STATES[(states_size * offset) + hsp];
-    ALGEBRAIC[(algebraic_size * offset) + fINap] = 1.00000/(1.00000+CONSTANTS[(constant_size * offset) + KmCaMK]/ALGEBRAIC[(algebraic_size * offset) + CaMKa]);
-    ALGEBRAIC[(algebraic_size * offset) + INa] =  CONSTANTS[(constant_size * offset) + GNa]*(STATES[(states_size * offset) + V] - ALGEBRAIC[(algebraic_size * offset) + ENa])*pow(STATES[(states_size * offset) + m], 3.00000)*( (1.00000 - ALGEBRAIC[(algebraic_size * offset) + fINap])*ALGEBRAIC[(algebraic_size * offset) + h]*STATES[(states_size * offset) + j]+ ALGEBRAIC[(algebraic_size * offset) + fINap]*ALGEBRAIC[(algebraic_size * offset) + hp]*STATES[(states_size * offset) + jp]);
-    ALGEBRAIC[(algebraic_size * offset) + fINaLp] = 1.00000/(1.00000+CONSTANTS[(constant_size * offset) + KmCaMK]/ALGEBRAIC[(algebraic_size * offset) + CaMKa]);
-    ALGEBRAIC[(algebraic_size * offset) + INaL] =  CONSTANTS[(constant_size * offset) + GNaL]*(STATES[(states_size * offset) + V] - ALGEBRAIC[(algebraic_size * offset) + ENa])*STATES[(states_size * offset) + mL]*( (1.00000 - ALGEBRAIC[(algebraic_size * offset) + fINaLp])*STATES[(states_size * offset) + hL]+ ALGEBRAIC[(algebraic_size * offset) + fINaLp]*STATES[(states_size * offset) + hLp]);
-    ALGEBRAIC[(algebraic_size * offset) + allo_i] = 1.00000/(1.00000+pow(CONSTANTS[(constant_size * offset) + KmCaAct]/STATES[(states_size * offset) + cai], 2.00000));
-    ALGEBRAIC[(algebraic_size * offset) + hna] = exp(( CONSTANTS[(constant_size * offset) + qna]*STATES[(states_size * offset) + V]*CONSTANTS[(constant_size * offset) + F])/( CONSTANTS[(constant_size * offset) + R]*CONSTANTS[(constant_size * offset) + T]));
-    ALGEBRAIC[(algebraic_size * offset) + h7_i] = 1.00000+ (CONSTANTS[(constant_size * offset) + nao]/CONSTANTS[(constant_size * offset) + kna3])*(1.00000+1.00000/ALGEBRAIC[(algebraic_size * offset) + hna]);
-    ALGEBRAIC[(algebraic_size * offset) + h8_i] = CONSTANTS[(constant_size * offset) + nao]/( CONSTANTS[(constant_size * offset) + kna3]*ALGEBRAIC[(algebraic_size * offset) + hna]*ALGEBRAIC[(algebraic_size * offset) + h7_i]);
-    ALGEBRAIC[(algebraic_size * offset) + k3pp_i] =  ALGEBRAIC[(algebraic_size * offset) + h8_i]*CONSTANTS[(constant_size * offset) + wnaca];
-    ALGEBRAIC[(algebraic_size * offset) + h1_i] = 1.00000+ (STATES[(states_size * offset) + nai]/CONSTANTS[(constant_size * offset) + kna3])*(1.00000+ALGEBRAIC[(algebraic_size * offset) + hna]);
-    ALGEBRAIC[(algebraic_size * offset) + h2_i] = ( STATES[(states_size * offset) + nai]*ALGEBRAIC[(algebraic_size * offset) + hna])/( CONSTANTS[(constant_size * offset) + kna3]*ALGEBRAIC[(algebraic_size * offset) + h1_i]);
-    ALGEBRAIC[(algebraic_size * offset) + k4pp_i] =  ALGEBRAIC[(algebraic_size * offset) + h2_i]*CONSTANTS[(constant_size * offset) + wnaca];
-    ALGEBRAIC[(algebraic_size * offset) + h4_i] = 1.00000+ (STATES[(states_size * offset) + nai]/CONSTANTS[(constant_size * offset) + kna1])*(1.00000+STATES[(states_size * offset) + nai]/CONSTANTS[(constant_size * offset) + kna2]);
-    ALGEBRAIC[(algebraic_size * offset) + h5_i] = ( STATES[(states_size * offset) + nai]*STATES[(states_size * offset) + nai])/( ALGEBRAIC[(algebraic_size * offset) + h4_i]*CONSTANTS[(constant_size * offset) + kna1]*CONSTANTS[(constant_size * offset) + kna2]);
-    ALGEBRAIC[(algebraic_size * offset) + k7_i] =  ALGEBRAIC[(algebraic_size * offset) + h5_i]*ALGEBRAIC[(algebraic_size * offset) + h2_i]*CONSTANTS[(constant_size * offset) + wna];
-    ALGEBRAIC[(algebraic_size * offset) + k8_i] =  ALGEBRAIC[(algebraic_size * offset) + h8_i]*CONSTANTS[(constant_size * offset) + h11_i]*CONSTANTS[(constant_size * offset) + wna];
-    ALGEBRAIC[(algebraic_size * offset) + h9_i] = 1.00000/ALGEBRAIC[(algebraic_size * offset) + h7_i];
-    ALGEBRAIC[(algebraic_size * offset) + k3p_i] =  ALGEBRAIC[(algebraic_size * offset) + h9_i]*CONSTANTS[(constant_size * offset) + wca];
-    ALGEBRAIC[(algebraic_size * offset) + k3_i] = ALGEBRAIC[(algebraic_size * offset) + k3p_i]+ALGEBRAIC[(algebraic_size * offset) + k3pp_i];
-    ALGEBRAIC[(algebraic_size * offset) + hca] = exp(( CONSTANTS[(constant_size * offset) + qca]*STATES[(states_size * offset) + V]*CONSTANTS[(constant_size * offset) + F])/( CONSTANTS[(constant_size * offset) + R]*CONSTANTS[(constant_size * offset) + T]));
-    ALGEBRAIC[(algebraic_size * offset) + h3_i] = 1.00000/ALGEBRAIC[(algebraic_size * offset) + h1_i];
-    ALGEBRAIC[(algebraic_size * offset) + k4p_i] = ( ALGEBRAIC[(algebraic_size * offset) + h3_i]*CONSTANTS[(constant_size * offset) + wca])/ALGEBRAIC[(algebraic_size * offset) + hca];
-    ALGEBRAIC[(algebraic_size * offset) + k4_i] = ALGEBRAIC[(algebraic_size * offset) + k4p_i]+ALGEBRAIC[(algebraic_size * offset) + k4pp_i];
-    ALGEBRAIC[(algebraic_size * offset) + h6_i] = 1.00000/ALGEBRAIC[(algebraic_size * offset) + h4_i];
-    ALGEBRAIC[(algebraic_size * offset) + k6_i] =  ALGEBRAIC[(algebraic_size * offset) + h6_i]*STATES[(states_size * offset) + cai]*CONSTANTS[(constant_size * offset) + kcaon];
-    ALGEBRAIC[(algebraic_size * offset) + x1_i] =  CONSTANTS[(constant_size * offset) + k2_i]*ALGEBRAIC[(algebraic_size * offset) + k4_i]*(ALGEBRAIC[(algebraic_size * offset) + k7_i]+ALGEBRAIC[(algebraic_size * offset) + k6_i])+ CONSTANTS[(constant_size * offset) + k5_i]*ALGEBRAIC[(algebraic_size * offset) + k7_i]*(CONSTANTS[(constant_size * offset) + k2_i]+ALGEBRAIC[(algebraic_size * offset) + k3_i]);
-    ALGEBRAIC[(algebraic_size * offset) + x2_i] =  CONSTANTS[(constant_size * offset) + k1_i]*ALGEBRAIC[(algebraic_size * offset) + k7_i]*(ALGEBRAIC[(algebraic_size * offset) + k4_i]+CONSTANTS[(constant_size * offset) + k5_i])+ ALGEBRAIC[(algebraic_size * offset) + k4_i]*ALGEBRAIC[(algebraic_size * offset) + k6_i]*(CONSTANTS[(constant_size * offset) + k1_i]+ALGEBRAIC[(algebraic_size * offset) + k8_i]);
-    ALGEBRAIC[(algebraic_size * offset) + x3_i] =  CONSTANTS[(constant_size * offset) + k1_i]*ALGEBRAIC[(algebraic_size * offset) + k3_i]*(ALGEBRAIC[(algebraic_size * offset) + k7_i]+ALGEBRAIC[(algebraic_size * offset) + k6_i])+ ALGEBRAIC[(algebraic_size * offset) + k8_i]*ALGEBRAIC[(algebraic_size * offset) + k6_i]*(CONSTANTS[(constant_size * offset) + k2_i]+ALGEBRAIC[(algebraic_size * offset) + k3_i]);
-    ALGEBRAIC[(algebraic_size * offset) + x4_i] =  CONSTANTS[(constant_size * offset) + k2_i]*ALGEBRAIC[(algebraic_size * offset) + k8_i]*(ALGEBRAIC[(algebraic_size * offset) + k4_i]+CONSTANTS[(constant_size * offset) + k5_i])+ ALGEBRAIC[(algebraic_size * offset) + k3_i]*CONSTANTS[(constant_size * offset) + k5_i]*(CONSTANTS[(constant_size * offset) + k1_i]+ALGEBRAIC[(algebraic_size * offset) + k8_i]);
-    ALGEBRAIC[(algebraic_size * offset) + E1_i] = ALGEBRAIC[(algebraic_size * offset) + x1_i]/(ALGEBRAIC[(algebraic_size * offset) + x1_i]+ALGEBRAIC[(algebraic_size * offset) + x2_i]+ALGEBRAIC[(algebraic_size * offset) + x3_i]+ALGEBRAIC[(algebraic_size * offset) + x4_i]);
-    ALGEBRAIC[(algebraic_size * offset) + E2_i] = ALGEBRAIC[(algebraic_size * offset) + x2_i]/(ALGEBRAIC[(algebraic_size * offset) + x1_i]+ALGEBRAIC[(algebraic_size * offset) + x2_i]+ALGEBRAIC[(algebraic_size * offset) + x3_i]+ALGEBRAIC[(algebraic_size * offset) + x4_i]);
-    ALGEBRAIC[(algebraic_size * offset) + E3_i] = ALGEBRAIC[(algebraic_size * offset) + x3_i]/(ALGEBRAIC[(algebraic_size * offset) + x1_i]+ALGEBRAIC[(algebraic_size * offset) + x2_i]+ALGEBRAIC[(algebraic_size * offset) + x3_i]+ALGEBRAIC[(algebraic_size * offset) + x4_i]);
-    ALGEBRAIC[(algebraic_size * offset) + E4_i] = ALGEBRAIC[(algebraic_size * offset) + x4_i]/(ALGEBRAIC[(algebraic_size * offset) + x1_i]+ALGEBRAIC[(algebraic_size * offset) + x2_i]+ALGEBRAIC[(algebraic_size * offset) + x3_i]+ALGEBRAIC[(algebraic_size * offset) + x4_i]);
-    ALGEBRAIC[(algebraic_size * offset) + JncxNa_i] = ( 3.00000*( ALGEBRAIC[(algebraic_size * offset) + E4_i]*ALGEBRAIC[(algebraic_size * offset) + k7_i] -  ALGEBRAIC[(algebraic_size * offset) + E1_i]*ALGEBRAIC[(algebraic_size * offset) + k8_i])+ ALGEBRAIC[(algebraic_size * offset) + E3_i]*ALGEBRAIC[(algebraic_size * offset) + k4pp_i]) -  ALGEBRAIC[(algebraic_size * offset) + E2_i]*ALGEBRAIC[(algebraic_size * offset) + k3pp_i];
-    ALGEBRAIC[(algebraic_size * offset) + JncxCa_i] =  ALGEBRAIC[(algebraic_size * offset) + E2_i]*CONSTANTS[(constant_size * offset) + k2_i] -  ALGEBRAIC[(algebraic_size * offset) + E1_i]*CONSTANTS[(constant_size * offset) + k1_i];
-    ALGEBRAIC[(algebraic_size * offset) + INaCa_i] =  0.800000*CONSTANTS[(constant_size * offset) + Gncx]*ALGEBRAIC[(algebraic_size * offset) + allo_i]*( CONSTANTS[(constant_size * offset) + zna]*ALGEBRAIC[(algebraic_size * offset) + JncxNa_i]+ CONSTANTS[(constant_size * offset) + zca]*ALGEBRAIC[(algebraic_size * offset) + JncxCa_i]);
-    ALGEBRAIC[(algebraic_size * offset) + A_Nab] = ( CONSTANTS[(constant_size * offset) + PNab]*CONSTANTS[(constant_size * offset) + ffrt]*( STATES[(states_size * offset) + nai]*exp(ALGEBRAIC[(algebraic_size * offset) + vfrt]) - CONSTANTS[(constant_size * offset) + nao]))/CONSTANTS[(constant_size * offset) + B_Nab];
-    ALGEBRAIC[(algebraic_size * offset) + U_Nab] =  CONSTANTS[(constant_size * offset) + B_Nab]*(STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) + v0_Nab]);
-    ALGEBRAIC[(algebraic_size * offset) + INab] = (- 1.00000e-07<=ALGEBRAIC[(algebraic_size * offset) + U_Nab]&&ALGEBRAIC[(algebraic_size * offset) + U_Nab]<=1.00000e-07 ?  ALGEBRAIC[(algebraic_size * offset) + A_Nab]*(1.00000 -  0.500000*ALGEBRAIC[(algebraic_size * offset) + U_Nab]) : ( ALGEBRAIC[(algebraic_size * offset) + A_Nab]*ALGEBRAIC[(algebraic_size * offset) + U_Nab])/(exp(ALGEBRAIC[(algebraic_size * offset) + U_Nab]) - 1.00000));
-    ALGEBRAIC[(algebraic_size * offset) + JdiffNa] = (STATES[(states_size * offset) + nass] - STATES[(states_size * offset) + nai])/2.00000;
-    ALGEBRAIC[(algebraic_size * offset) + A_2] = ( 0.750000*CONSTANTS[(constant_size * offset) + ffrt]*( STATES[(states_size * offset) + nass]*exp(ALGEBRAIC[(algebraic_size * offset) + vfrt]) - CONSTANTS[(constant_size * offset) + nao]))/CONSTANTS[(constant_size * offset) + B_2];
-    ALGEBRAIC[(algebraic_size * offset) + U_2] =  CONSTANTS[(constant_size * offset) + B_2]*(STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) + v0_CaL]);
-    ALGEBRAIC[(algebraic_size * offset) + PhiCaNa] = (- 1.00000e-07<=ALGEBRAIC[(algebraic_size * offset) + U_2]&&ALGEBRAIC[(algebraic_size * offset) + U_2]<=1.00000e-07 ?  ALGEBRAIC[(algebraic_size * offset) + A_2]*(1.00000 -  0.500000*ALGEBRAIC[(algebraic_size * offset) + U_2]) : ( ALGEBRAIC[(algebraic_size * offset) + A_2]*ALGEBRAIC[(algebraic_size * offset) + U_2])/(exp(ALGEBRAIC[(algebraic_size * offset) + U_2]) - 1.00000));
-    ALGEBRAIC[(algebraic_size * offset) + ICaNa] =  (1.00000 - ALGEBRAIC[(algebraic_size * offset) + fICaLp])*CONSTANTS[(constant_size * offset) + PCaNa]*ALGEBRAIC[(algebraic_size * offset) + PhiCaNa]*STATES[(states_size * offset) + d]*( ALGEBRAIC[(algebraic_size * offset) + f]*(1.00000 - STATES[(states_size * offset) + nca])+ STATES[(states_size * offset) + jca]*ALGEBRAIC[(algebraic_size * offset) + fca]*STATES[(states_size * offset) + nca])+ ALGEBRAIC[(algebraic_size * offset) + fICaLp]*CONSTANTS[(constant_size * offset) + PCaNap]*ALGEBRAIC[(algebraic_size * offset) + PhiCaNa]*STATES[(states_size * offset) + d]*( ALGEBRAIC[(algebraic_size * offset) + fp]*(1.00000 - STATES[(states_size * offset) + nca])+ STATES[(states_size * offset) + jca]*ALGEBRAIC[(algebraic_size * offset) + fcap]*STATES[(states_size * offset) + nca]);
-    ALGEBRAIC[(algebraic_size * offset) + allo_ss] = 1.00000/(1.00000+pow(CONSTANTS[(constant_size * offset) + KmCaAct]/STATES[(states_size * offset) + cass], 2.00000));
-    ALGEBRAIC[(algebraic_size * offset) + h7_ss] = 1.00000+ (CONSTANTS[(constant_size * offset) + nao]/CONSTANTS[(constant_size * offset) + kna3])*(1.00000+1.00000/ALGEBRAIC[(algebraic_size * offset) + hna]);
-    ALGEBRAIC[(algebraic_size * offset) + h8_ss] = CONSTANTS[(constant_size * offset) + nao]/( CONSTANTS[(constant_size * offset) + kna3]*ALGEBRAIC[(algebraic_size * offset) + hna]*ALGEBRAIC[(algebraic_size * offset) + h7_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + k3pp_ss] =  ALGEBRAIC[(algebraic_size * offset) + h8_ss]*CONSTANTS[(constant_size * offset) + wnaca];
-    ALGEBRAIC[(algebraic_size * offset) + h1_ss] = 1.00000+ (STATES[(states_size * offset) + nass]/CONSTANTS[(constant_size * offset) + kna3])*(1.00000+ALGEBRAIC[(algebraic_size * offset) + hna]);
-    ALGEBRAIC[(algebraic_size * offset) + h2_ss] = ( STATES[(states_size * offset) + nass]*ALGEBRAIC[(algebraic_size * offset) + hna])/( CONSTANTS[(constant_size * offset) + kna3]*ALGEBRAIC[(algebraic_size * offset) + h1_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + k4pp_ss] =  ALGEBRAIC[(algebraic_size * offset) + h2_ss]*CONSTANTS[(constant_size * offset) + wnaca];
-    ALGEBRAIC[(algebraic_size * offset) + h4_ss] = 1.00000+ (STATES[(states_size * offset) + nass]/CONSTANTS[(constant_size * offset) + kna1])*(1.00000+STATES[(states_size * offset) + nass]/CONSTANTS[(constant_size * offset) + kna2]);
-    ALGEBRAIC[(algebraic_size * offset) + h5_ss] = ( STATES[(states_size * offset) + nass]*STATES[(states_size * offset) + nass])/( ALGEBRAIC[(algebraic_size * offset) + h4_ss]*CONSTANTS[(constant_size * offset) + kna1]*CONSTANTS[(constant_size * offset) + kna2]);
-    ALGEBRAIC[(algebraic_size * offset) + k7_ss] =  ALGEBRAIC[(algebraic_size * offset) + h5_ss]*ALGEBRAIC[(algebraic_size * offset) + h2_ss]*CONSTANTS[(constant_size * offset) + wna];
-    ALGEBRAIC[(algebraic_size * offset) + k8_ss] =  ALGEBRAIC[(algebraic_size * offset) + h8_ss]*CONSTANTS[(constant_size * offset) + h11_ss]*CONSTANTS[(constant_size * offset) + wna];
-    ALGEBRAIC[(algebraic_size * offset) + h9_ss] = 1.00000/ALGEBRAIC[(algebraic_size * offset) + h7_ss];
-    ALGEBRAIC[(algebraic_size * offset) + k3p_ss] =  ALGEBRAIC[(algebraic_size * offset) + h9_ss]*CONSTANTS[(constant_size * offset) + wca];
-    ALGEBRAIC[(algebraic_size * offset) + k3_ss] = ALGEBRAIC[(algebraic_size * offset) + k3p_ss]+ALGEBRAIC[(algebraic_size * offset) + k3pp_ss];
-    ALGEBRAIC[(algebraic_size * offset) + h3_ss] = 1.00000/ALGEBRAIC[(algebraic_size * offset) + h1_ss];
-    ALGEBRAIC[(algebraic_size * offset) + k4p_ss] = ( ALGEBRAIC[(algebraic_size * offset) + h3_ss]*CONSTANTS[(constant_size * offset) + wca])/ALGEBRAIC[(algebraic_size * offset) + hca];
-    ALGEBRAIC[(algebraic_size * offset) + k4_ss] = ALGEBRAIC[(algebraic_size * offset) + k4p_ss]+ALGEBRAIC[(algebraic_size * offset) + k4pp_ss];
-    ALGEBRAIC[(algebraic_size * offset) + h6_ss] = 1.00000/ALGEBRAIC[(algebraic_size * offset) + h4_ss];
-    ALGEBRAIC[(algebraic_size * offset) + k6_ss] =  ALGEBRAIC[(algebraic_size * offset) + h6_ss]*STATES[(states_size * offset) + cass]*CONSTANTS[(constant_size * offset) + kcaon];
-    ALGEBRAIC[(algebraic_size * offset) + x1_ss] =  CONSTANTS[(constant_size * offset) + k2_ss]*ALGEBRAIC[(algebraic_size * offset) + k4_ss]*(ALGEBRAIC[(algebraic_size * offset) + k7_ss]+ALGEBRAIC[(algebraic_size * offset) + k6_ss])+ CONSTANTS[(constant_size * offset) + k5_ss]*ALGEBRAIC[(algebraic_size * offset) + k7_ss]*(CONSTANTS[(constant_size * offset) + k2_ss]+ALGEBRAIC[(algebraic_size * offset) + k3_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + x2_ss] =  CONSTANTS[(constant_size * offset) + k1_ss]*ALGEBRAIC[(algebraic_size * offset) + k7_ss]*(ALGEBRAIC[(algebraic_size * offset) + k4_ss]+CONSTANTS[(constant_size * offset) + k5_ss])+ ALGEBRAIC[(algebraic_size * offset) + k4_ss]*ALGEBRAIC[(algebraic_size * offset) + k6_ss]*(CONSTANTS[(constant_size * offset) + k1_ss]+ALGEBRAIC[(algebraic_size * offset) + k8_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + x3_ss] =  CONSTANTS[(constant_size * offset) + k1_ss]*ALGEBRAIC[(algebraic_size * offset) + k3_ss]*(ALGEBRAIC[(algebraic_size * offset) + k7_ss]+ALGEBRAIC[(algebraic_size * offset) + k6_ss])+ ALGEBRAIC[(algebraic_size * offset) + k8_ss]*ALGEBRAIC[(algebraic_size * offset) + k6_ss]*(CONSTANTS[(constant_size * offset) + k2_ss]+ALGEBRAIC[(algebraic_size * offset) + k3_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + x4_ss] =  CONSTANTS[(constant_size * offset) + k2_ss]*ALGEBRAIC[(algebraic_size * offset) + k8_ss]*(ALGEBRAIC[(algebraic_size * offset) + k4_ss]+CONSTANTS[(constant_size * offset) + k5_ss])+ ALGEBRAIC[(algebraic_size * offset) + k3_ss]*CONSTANTS[(constant_size * offset) + k5_ss]*(CONSTANTS[(constant_size * offset) + k1_ss]+ALGEBRAIC[(algebraic_size * offset) + k8_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + E1_ss] = ALGEBRAIC[(algebraic_size * offset) + x1_ss]/(ALGEBRAIC[(algebraic_size * offset) + x1_ss]+ALGEBRAIC[(algebraic_size * offset) + x2_ss]+ALGEBRAIC[(algebraic_size * offset) + x3_ss]+ALGEBRAIC[(algebraic_size * offset) + x4_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + E2_ss] = ALGEBRAIC[(algebraic_size * offset) + x2_ss]/(ALGEBRAIC[(algebraic_size * offset) + x1_ss]+ALGEBRAIC[(algebraic_size * offset) + x2_ss]+ALGEBRAIC[(algebraic_size * offset) + x3_ss]+ALGEBRAIC[(algebraic_size * offset) + x4_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + E3_ss] = ALGEBRAIC[(algebraic_size * offset) + x3_ss]/(ALGEBRAIC[(algebraic_size * offset) + x1_ss]+ALGEBRAIC[(algebraic_size * offset) + x2_ss]+ALGEBRAIC[(algebraic_size * offset) + x3_ss]+ALGEBRAIC[(algebraic_size * offset) + x4_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + E4_ss] = ALGEBRAIC[(algebraic_size * offset) + x4_ss]/(ALGEBRAIC[(algebraic_size * offset) + x1_ss]+ALGEBRAIC[(algebraic_size * offset) + x2_ss]+ALGEBRAIC[(algebraic_size * offset) + x3_ss]+ALGEBRAIC[(algebraic_size * offset) + x4_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + JncxNa_ss] = ( 3.00000*( ALGEBRAIC[(algebraic_size * offset) + E4_ss]*ALGEBRAIC[(algebraic_size * offset) + k7_ss] -  ALGEBRAIC[(algebraic_size * offset) + E1_ss]*ALGEBRAIC[(algebraic_size * offset) + k8_ss])+ ALGEBRAIC[(algebraic_size * offset) + E3_ss]*ALGEBRAIC[(algebraic_size * offset) + k4pp_ss]) -  ALGEBRAIC[(algebraic_size * offset) + E2_ss]*ALGEBRAIC[(algebraic_size * offset) + k3pp_ss];
-    ALGEBRAIC[(algebraic_size * offset) + JncxCa_ss] =  ALGEBRAIC[(algebraic_size * offset) + E2_ss]*CONSTANTS[(constant_size * offset) + k2_ss] -  ALGEBRAIC[(algebraic_size * offset) + E1_ss]*CONSTANTS[(constant_size * offset) + k1_ss];
-    ALGEBRAIC[(algebraic_size * offset) + INaCa_ss] =  0.200000*CONSTANTS[(constant_size * offset) + Gncx]*ALGEBRAIC[(algebraic_size * offset) + allo_ss]*( CONSTANTS[(constant_size * offset) + zna]*ALGEBRAIC[(algebraic_size * offset) + JncxNa_ss]+ CONSTANTS[(constant_size * offset) + zca]*ALGEBRAIC[(algebraic_size * offset) + JncxCa_ss]);
-    ALGEBRAIC[(algebraic_size * offset) + IpCa] = ( CONSTANTS[(constant_size * offset) + GpCa]*STATES[(states_size * offset) + cai])/(CONSTANTS[(constant_size * offset) + KmCap]+STATES[(states_size * offset) + cai]);
-    ALGEBRAIC[(algebraic_size * offset) + A_Cab] = ( CONSTANTS[(constant_size * offset) + PCab]*4.00000*CONSTANTS[(constant_size * offset) + ffrt]*( STATES[(states_size * offset) + cai]*exp( 2.00000*ALGEBRAIC[(algebraic_size * offset) + vfrt]) -  0.341000*CONSTANTS[(constant_size * offset) + cao]))/CONSTANTS[(constant_size * offset) + B_Cab];
-    ALGEBRAIC[(algebraic_size * offset) + U_Cab] =  CONSTANTS[(constant_size * offset) + B_Cab]*(STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) + v0_Cab]);
-    ALGEBRAIC[(algebraic_size * offset) + ICab] = (- 1.00000e-07<=ALGEBRAIC[(algebraic_size * offset) + U_Cab]&&ALGEBRAIC[(algebraic_size * offset) + U_Cab]<=1.00000e-07 ?  ALGEBRAIC[(algebraic_size * offset) + A_Cab]*(1.00000 -  0.500000*ALGEBRAIC[(algebraic_size * offset) + U_Cab]) : ( ALGEBRAIC[(algebraic_size * offset) + A_Cab]*ALGEBRAIC[(algebraic_size * offset) + U_Cab])/(exp(ALGEBRAIC[(algebraic_size * offset) + U_Cab]) - 1.00000));
-    ALGEBRAIC[(algebraic_size * offset) + Jdiff] = (STATES[(states_size * offset) + cass] - STATES[(states_size * offset) + cai])/0.200000;
-    ALGEBRAIC[(algebraic_size * offset) + fJrelp] = 1.00000/(1.00000+CONSTANTS[(constant_size * offset) + KmCaMK]/ALGEBRAIC[(algebraic_size * offset) + CaMKa]);
-    ALGEBRAIC[(algebraic_size * offset) + Jrel] =  CONSTANTS[(constant_size * offset) + Jrel_scaling_factor]*( (1.00000 - ALGEBRAIC[(algebraic_size * offset) + fJrelp])*STATES[(states_size * offset) + Jrelnp]+ ALGEBRAIC[(algebraic_size * offset) + fJrelp]*STATES[(states_size * offset) + Jrelp]);
-    ALGEBRAIC[(algebraic_size * offset) + Bcass] = 1.00000/(1.00000+( CONSTANTS[(constant_size * offset) + BSRmax]*CONSTANTS[(constant_size * offset) + KmBSR])/pow(CONSTANTS[(constant_size * offset) + KmBSR]+STATES[(states_size * offset) + cass], 2.00000)+( CONSTANTS[(constant_size * offset) + BSLmax]*CONSTANTS[(constant_size * offset) + KmBSL])/pow(CONSTANTS[(constant_size * offset) + KmBSL]+STATES[(states_size * offset) + cass], 2.00000));
-    ALGEBRAIC[(algebraic_size * offset) + Jupnp] = ( CONSTANTS[(constant_size * offset) + upScale]*0.00437500*STATES[(states_size * offset) + cai])/(STATES[(states_size * offset) + cai]+0.000920000);
-    ALGEBRAIC[(algebraic_size * offset) + Jupp] = ( CONSTANTS[(constant_size * offset) + upScale]*2.75000*0.00437500*STATES[(states_size * offset) + cai])/((STATES[(states_size * offset) + cai]+0.000920000) - 0.000170000);
-    ALGEBRAIC[(algebraic_size * offset) + fJupp] = 1.00000/(1.00000+CONSTANTS[(constant_size * offset) + KmCaMK]/ALGEBRAIC[(algebraic_size * offset) + CaMKa]);
-    ALGEBRAIC[(algebraic_size * offset) + Jleak] = ( 0.00393750*STATES[(states_size * offset) + cansr])/15.0000;
-    ALGEBRAIC[(algebraic_size * offset) + Jup] =  CONSTANTS[(constant_size * offset) + Jup_b]*(( (1.00000 - ALGEBRAIC[(algebraic_size * offset) + fJupp])*ALGEBRAIC[(algebraic_size * offset) + Jupnp]+ ALGEBRAIC[(algebraic_size * offset) + fJupp]*ALGEBRAIC[(algebraic_size * offset) + Jupp]) - ALGEBRAIC[(algebraic_size * offset) + Jleak]);
-    ALGEBRAIC[(algebraic_size * offset) + Bcai] = 1.00000/(1.00000+( CONSTANTS[(constant_size * offset) + cmdnmax]*CONSTANTS[(constant_size * offset) + kmcmdn])/pow(CONSTANTS[(constant_size * offset) + kmcmdn]+STATES[(states_size * offset) + cai], 2.00000)+( CONSTANTS[(constant_size * offset) + trpnmax]*CONSTANTS[(constant_size * offset) + kmtrpn])/pow(CONSTANTS[(constant_size * offset) + kmtrpn]+STATES[(states_size * offset) + cai], 2.00000));
-    ALGEBRAIC[(algebraic_size * offset) + Jtr] = (STATES[(states_size * offset) + cansr] - STATES[(states_size * offset) + cajsr])/100.000;
-    ALGEBRAIC[(algebraic_size * offset) + Bcajsr] = 1.00000/(1.00000+( CONSTANTS[(constant_size * offset) + csqnmax]*CONSTANTS[(constant_size * offset) + kmcsqn])/pow(CONSTANTS[(constant_size * offset) + kmcsqn]+STATES[(states_size * offset) + cajsr], 2.00000));
+CONSTANTS[(206 * offset) + cmdnmax] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ?  CONSTANTS[(206 * offset) + cmdnmax_b]*1.30000 : CONSTANTS[(206 * offset) + cmdnmax_b]);
+CONSTANTS[(206 * offset) + GNaL] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ?  CONSTANTS[(206 * offset) + GNaL_b]*0.600000 : CONSTANTS[(206 * offset) + GNaL_b]);
+CONSTANTS[(206 * offset) + Gto] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ?  CONSTANTS[(206 * offset) + Gto_b]*4.00000 : CONSTANTS[(206 * offset) + celltype]==2.00000 ?  CONSTANTS[(206 * offset) + Gto_b]*4.00000 : CONSTANTS[(206 * offset) + Gto_b]);
+CONSTANTS[(206 * offset) + PCa] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ?  CONSTANTS[(206 * offset) + PCa_b]*1.20000 : CONSTANTS[(206 * offset) + celltype]==2.00000 ?  CONSTANTS[(206 * offset) + PCa_b]*2.50000 : CONSTANTS[(206 * offset) + PCa_b]);
+CONSTANTS[(206 * offset) + GKr] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ?  CONSTANTS[(206 * offset) + GKr_b]*1.30000 : CONSTANTS[(206 * offset) + celltype]==2.00000 ?  CONSTANTS[(206 * offset) + GKr_b]*0.800000 : CONSTANTS[(206 * offset) + GKr_b]);
+CONSTANTS[(206 * offset) + GKs] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ?  CONSTANTS[(206 * offset) + GKs_b]*1.40000 : CONSTANTS[(206 * offset) + GKs_b]);
+CONSTANTS[(206 * offset) + GK1] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ?  CONSTANTS[(206 * offset) + GK1_b]*1.20000 : CONSTANTS[(206 * offset) + celltype]==2.00000 ?  CONSTANTS[(206 * offset) + GK1_b]*1.30000 : CONSTANTS[(206 * offset) + GK1_b]);
+CONSTANTS[(206 * offset) + GKb] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ?  CONSTANTS[(206 * offset) + GKb_b]*0.600000 : CONSTANTS[(206 * offset) + GKb_b]);
+CONSTANTS[(206 * offset) + upScale] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ? 1.30000 : 1.00000);
+CONSTANTS[(206 * offset) + Gncx] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ?  CONSTANTS[(206 * offset) + Gncx_b]*1.10000 : CONSTANTS[(206 * offset) + celltype]==2.00000 ?  CONSTANTS[(206 * offset) + Gncx_b]*1.40000 : CONSTANTS[(206 * offset) + Gncx_b]);
+CONSTANTS[(206 * offset) + Pnak] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ?  CONSTANTS[(206 * offset) + Pnak_b]*0.900000 : CONSTANTS[(206 * offset) + celltype]==2.00000 ?  CONSTANTS[(206 * offset) + Pnak_b]*0.700000 : CONSTANTS[(206 * offset) + Pnak_b]);
 
-    //RATES[D] = CONSTANTS[cnc];
-    RATES[(rates_size * offset) + D] = 0.;
-    RATES[(rates_size * offset) + IC1] = (- ( CONSTANTS[(constant_size * offset) +  A11]*exp( CONSTANTS[(constant_size * offset) +  B11]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IC1]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q11]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A21]*exp( CONSTANTS[(constant_size * offset) +  B21]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IC2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q21]))/10.0000))+ CONSTANTS[(constant_size * offset) +  A51]*exp( CONSTANTS[(constant_size * offset) +  B51]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + C1]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q51]))/10.0000)) -  CONSTANTS[(constant_size * offset) +  A61]*exp( CONSTANTS[(constant_size * offset) +  B61]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IC1]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q61]))/10.0000);
-    RATES[(rates_size * offset) + IC2] = ((( CONSTANTS[(constant_size * offset) +  A11]*exp( CONSTANTS[(constant_size * offset) +  B11]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IC1]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q11]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A21]*exp( CONSTANTS[(constant_size * offset) +  B21]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IC2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q21]))/10.0000)) - ( CONSTANTS[(constant_size * offset) +  A3]*exp( CONSTANTS[(constant_size * offset) +  B3]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IC2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q3]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A4]*exp( CONSTANTS[(constant_size * offset) +  B4]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IO]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q4]))/10.0000)))+ CONSTANTS[(constant_size * offset) +  A52]*exp( CONSTANTS[(constant_size * offset) +  B52]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + C2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q52]))/10.0000)) -  CONSTANTS[(constant_size * offset) +  A62]*exp( CONSTANTS[(constant_size * offset) +  B62]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IC2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q62]))/10.0000);
-    RATES[(rates_size * offset) + C1] = - ( CONSTANTS[(constant_size * offset) +  A1]*exp( CONSTANTS[(constant_size * offset) +  B1]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + C1]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q1]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A2]*exp( CONSTANTS[(constant_size * offset) +  B2]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + C2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q2]))/10.0000)) - ( CONSTANTS[(constant_size * offset) +  A51]*exp( CONSTANTS[(constant_size * offset) +  B51]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + C1]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q51]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A61]*exp( CONSTANTS[(constant_size * offset) +  B61]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IC1]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q61]))/10.0000));
-    RATES[(rates_size * offset) + C2] = (( CONSTANTS[(constant_size * offset) +  A1]*exp( CONSTANTS[(constant_size * offset) +  B1]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + C1]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q1]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A2]*exp( CONSTANTS[(constant_size * offset) +  B2]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + C2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q2]))/10.0000)) - ( CONSTANTS[(constant_size * offset) +  A31]*exp( CONSTANTS[(constant_size * offset) +  B31]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + C2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q31]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A41]*exp( CONSTANTS[(constant_size * offset) +  B41]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + O]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q41]))/10.0000))) - ( CONSTANTS[(constant_size * offset) +  A52]*exp( CONSTANTS[(constant_size * offset) +  B52]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + C2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q52]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A62]*exp( CONSTANTS[(constant_size * offset) +  B62]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IC2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q62]))/10.0000));
-    RATES[(rates_size * offset) + O] = (( CONSTANTS[(constant_size * offset) +  A31]*exp( CONSTANTS[(constant_size * offset) +  B31]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + C2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q31]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A41]*exp( CONSTANTS[(constant_size * offset) +  B41]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + O]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q41]))/10.0000)) - ( CONSTANTS[(constant_size * offset) +  A53]*exp( CONSTANTS[(constant_size * offset) +  B53]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + O]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q53]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A63]*exp( CONSTANTS[(constant_size * offset) +  B63]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IO]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q63]))/10.0000))) - ( (( CONSTANTS[(constant_size * offset) +  Kmax]*CONSTANTS[(constant_size * offset) +  Ku]*pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n]))/(pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n])+CONSTANTS[(constant_size * offset) +  halfmax]))*STATES[(states_size * offset) + O] -  CONSTANTS[(constant_size * offset) +  Ku]*STATES[(states_size * offset) + Obound]);
-    RATES[(rates_size * offset) + IO] = ((( CONSTANTS[(constant_size * offset) +  A3]*exp( CONSTANTS[(constant_size * offset) +  B3]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IC2]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q3]))/10.0000) -  CONSTANTS[(constant_size * offset) +  A4]*exp( CONSTANTS[(constant_size * offset) +  B4]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IO]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q4]))/10.0000))+ CONSTANTS[(constant_size * offset) +  A53]*exp( CONSTANTS[(constant_size * offset) +  B53]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + O]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q53]))/10.0000)) -  CONSTANTS[(constant_size * offset) +  A63]*exp( CONSTANTS[(constant_size * offset) +  B63]*STATES[(states_size * offset) + V])*STATES[(states_size * offset) + IO]*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q63]))/10.0000)) - ( (( CONSTANTS[(constant_size * offset) +  Kmax]*CONSTANTS[(constant_size * offset) +  Ku]*pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n]))/(pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n])+CONSTANTS[(constant_size * offset) +  halfmax]))*STATES[(states_size * offset) + IO] -  (( CONSTANTS[(constant_size * offset) +  Ku]*CONSTANTS[(constant_size * offset) +  A53]*exp( CONSTANTS[(constant_size * offset) +  B53]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q53]))/10.0000))/( CONSTANTS[(constant_size * offset) +  A63]*exp( CONSTANTS[(constant_size * offset) +  B63]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q63]))/10.0000)))*STATES[(states_size * offset) + IObound]);
-    RATES[(rates_size * offset) + IObound] = (( (( CONSTANTS[(constant_size * offset) +  Kmax]*CONSTANTS[(constant_size * offset) +  Ku]*pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n]))/(pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n])+CONSTANTS[(constant_size * offset) +  halfmax]))*STATES[(states_size * offset) + IO] -  (( CONSTANTS[(constant_size * offset) +  Ku]*CONSTANTS[(constant_size * offset) +  A53]*exp( CONSTANTS[(constant_size * offset) +  B53]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q53]))/10.0000))/( CONSTANTS[(constant_size * offset) +  A63]*exp( CONSTANTS[(constant_size * offset) +  B63]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q63]))/10.0000)))*STATES[(states_size * offset) + IObound])+ (CONSTANTS[(constant_size * offset) +  Kt]/(1.00000+exp(- (STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) +  Vhalf])/6.78900)))*STATES[(states_size * offset) + Cbound]) -  CONSTANTS[(constant_size * offset) +  Kt]*STATES[(states_size * offset) + IObound];
-    RATES[(rates_size * offset) + Obound] = (( (( CONSTANTS[(constant_size * offset) +  Kmax]*CONSTANTS[(constant_size * offset) +  Ku]*pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n]))/(pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n])+CONSTANTS[(constant_size * offset) +  halfmax]))*STATES[(states_size * offset) + O] -  CONSTANTS[(constant_size * offset) +  Ku]*STATES[(states_size * offset) + Obound])+ (CONSTANTS[(constant_size * offset) +  Kt]/(1.00000+exp(- (STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) +  Vhalf])/6.78900)))*STATES[(states_size * offset) + Cbound]) -  CONSTANTS[(constant_size * offset) +  Kt]*STATES[(states_size * offset) + Obound];
-    RATES[(rates_size * offset) + Cbound] = - ( (CONSTANTS[(constant_size * offset) +  Kt]/(1.00000+exp(- (STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) +  Vhalf])/6.78900)))*STATES[(states_size * offset) + Cbound] -  CONSTANTS[(constant_size * offset) +  Kt]*STATES[(states_size * offset) + Obound]) - ( (CONSTANTS[(constant_size * offset) +  Kt]/(1.00000+exp(- (STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) +  Vhalf])/6.78900)))*STATES[(states_size * offset) + Cbound] -  CONSTANTS[(constant_size * offset) +  Kt]*STATES[(states_size * offset) + IObound]);
-    RATES[(rates_size * offset) + hL] = (ALGEBRAIC[(algebraic_size * offset) + hLss] - STATES[(states_size * offset) + hL])/CONSTANTS[(constant_size * offset) +  thL];
-    RATES[(rates_size * offset) + hLp] = (ALGEBRAIC[(algebraic_size * offset) + hLssp] - STATES[(states_size * offset) + hLp])/CONSTANTS[(constant_size * offset) +  thLp];
-    RATES[(rates_size * offset) + m] = (ALGEBRAIC[(algebraic_size * offset) + mss] - STATES[(states_size * offset) + m])/ALGEBRAIC[(algebraic_size * offset) + tm];
-    RATES[(rates_size * offset) + hf] = (ALGEBRAIC[(algebraic_size * offset) + hss] - STATES[(states_size * offset) + hf])/ALGEBRAIC[(algebraic_size * offset) + thf];
-    RATES[(rates_size * offset) + hs] = (ALGEBRAIC[(algebraic_size * offset) + hss] - STATES[(states_size * offset) + hs])/ALGEBRAIC[(algebraic_size * offset) + ths];
-    RATES[(rates_size * offset) + a] = (ALGEBRAIC[(algebraic_size * offset) + ass] - STATES[(states_size * offset) + a])/ALGEBRAIC[(algebraic_size * offset) + ta];
-    RATES[(rates_size * offset) + d] = (ALGEBRAIC[(algebraic_size * offset) + dss] - STATES[(states_size * offset) + d])/ALGEBRAIC[(algebraic_size * offset) + td];
-    RATES[(rates_size * offset) + ff] = (ALGEBRAIC[(algebraic_size * offset) + fss] - STATES[(states_size * offset) + ff])/ALGEBRAIC[(algebraic_size * offset) + tff];
-    RATES[(rates_size * offset) + fs] = (ALGEBRAIC[(algebraic_size * offset) + fss] - STATES[(states_size * offset) + fs])/ALGEBRAIC[(algebraic_size * offset) + tfs];
-    RATES[(rates_size * offset) + jca] = (ALGEBRAIC[(algebraic_size * offset) + fcass] - STATES[(states_size * offset) + jca])/CONSTANTS[(constant_size * offset) +  tjca];
-    RATES[(rates_size * offset) + nca] =  ALGEBRAIC[(algebraic_size * offset) + anca]*CONSTANTS[(constant_size * offset) +  k2n] -  STATES[(states_size * offset) + nca]*ALGEBRAIC[(algebraic_size * offset) + km2n];
-    RATES[(rates_size * offset) + xs1] = (ALGEBRAIC[(algebraic_size * offset) + xs1ss] - STATES[(states_size * offset) + xs1])/ALGEBRAIC[(algebraic_size * offset) + txs1];
-    RATES[(rates_size * offset) + xk1] = (ALGEBRAIC[(algebraic_size * offset) + xk1ss] - STATES[(states_size * offset) + xk1])/ALGEBRAIC[(algebraic_size * offset) + txk1];
-    RATES[(rates_size * offset) + CaMKt] =  CONSTANTS[(constant_size * offset) +  aCaMK]*ALGEBRAIC[(algebraic_size * offset) + CaMKb]*(ALGEBRAIC[(algebraic_size * offset) + CaMKb]+STATES[(states_size * offset) + CaMKt]) -  CONSTANTS[(constant_size * offset) +  bCaMK]*STATES[(states_size * offset) + CaMKt];
-    RATES[(rates_size * offset) + j] = (ALGEBRAIC[(algebraic_size * offset) + jss] - STATES[(states_size * offset) + j])/ALGEBRAIC[(algebraic_size * offset) + tj];
-    RATES[(rates_size * offset) + ap] = (ALGEBRAIC[(algebraic_size * offset) + assp] - STATES[(states_size * offset) + ap])/ALGEBRAIC[(algebraic_size * offset) + ta];
-    RATES[(rates_size * offset) + fcaf] = (ALGEBRAIC[(algebraic_size * offset) + fcass] - STATES[(states_size * offset) + fcaf])/ALGEBRAIC[(algebraic_size * offset) + tfcaf];
-    RATES[(rates_size * offset) + fcas] = (ALGEBRAIC[(algebraic_size * offset) + fcass] - STATES[(states_size * offset) + fcas])/ALGEBRAIC[(algebraic_size * offset) + tfcas];
-    RATES[(rates_size * offset) + ffp] = (ALGEBRAIC[(algebraic_size * offset) + fss] - STATES[(states_size * offset) + ffp])/ALGEBRAIC[(algebraic_size * offset) + tffp];
-    RATES[(rates_size * offset) + xs2] = (ALGEBRAIC[(algebraic_size * offset) + xs2ss] - STATES[(states_size * offset) + xs2])/ALGEBRAIC[(algebraic_size * offset) + txs2];
-    RATES[(rates_size * offset) + hsp] = (ALGEBRAIC[(algebraic_size * offset) + hssp] - STATES[(states_size * offset) + hsp])/ALGEBRAIC[(algebraic_size * offset) + thsp];
-    RATES[(rates_size * offset) + jp] = (ALGEBRAIC[(algebraic_size * offset) + jss] - STATES[(states_size * offset) + jp])/ALGEBRAIC[(algebraic_size * offset) + tjp];
-    RATES[(rates_size * offset) + mL] = (ALGEBRAIC[(algebraic_size * offset) + mLss] - STATES[(states_size * offset) + mL])/ALGEBRAIC[(algebraic_size * offset) + tmL];
-    RATES[(rates_size * offset) + fcafp] = (ALGEBRAIC[(algebraic_size * offset) + fcass] - STATES[(states_size * offset) + fcafp])/ALGEBRAIC[(algebraic_size * offset) + tfcafp];
-    RATES[(rates_size * offset) + iF] = (ALGEBRAIC[(algebraic_size * offset) + iss] - STATES[(states_size * offset) + iF])/ALGEBRAIC[(algebraic_size * offset) + tiF];
-    RATES[(rates_size * offset) + iS] = (ALGEBRAIC[(algebraic_size * offset) + iss] - STATES[(states_size * offset) + iS])/ALGEBRAIC[(algebraic_size * offset) + tiS];
-    RATES[(rates_size * offset) + iFp] = (ALGEBRAIC[(algebraic_size * offset) + iss] - STATES[(states_size * offset) + iFp])/ALGEBRAIC[(algebraic_size * offset) + tiFp];
-    RATES[(rates_size * offset) + iSp] = (ALGEBRAIC[(algebraic_size * offset) + iss] - STATES[(states_size * offset) + iSp])/ALGEBRAIC[(algebraic_size * offset) + tiSp];
-    RATES[(rates_size * offset) + Jrelnp] = (ALGEBRAIC[(algebraic_size * offset) + Jrel_inf] - STATES[(states_size * offset) + Jrelnp])/ALGEBRAIC[(algebraic_size * offset) + tau_rel];
-    RATES[(rates_size * offset) + Jrelp] = (ALGEBRAIC[(algebraic_size * offset) + Jrel_infp] - STATES[(states_size * offset) + Jrelp])/ALGEBRAIC[(algebraic_size * offset) + tau_relp];
-    RATES[(rates_size * offset) + ki] = ( - ((ALGEBRAIC[(algebraic_size * offset) + Ito]+ALGEBRAIC[(algebraic_size * offset) + IKr]+ALGEBRAIC[(algebraic_size * offset) + IKs]+ALGEBRAIC[(algebraic_size * offset) + IK1]+ALGEBRAIC[(algebraic_size * offset) + IKb]+ALGEBRAIC[(algebraic_size * offset) + Istim]) -  2.00000*ALGEBRAIC[(algebraic_size * offset) + INaK])*CONSTANTS[(constant_size * offset) +  cm]*CONSTANTS[(constant_size * offset) +  Acap])/( CONSTANTS[(constant_size * offset) +  F]*CONSTANTS[(constant_size * offset) +  vmyo])+( ALGEBRAIC[(algebraic_size * offset) + JdiffK]*CONSTANTS[(constant_size * offset) +  vss])/CONSTANTS[(constant_size * offset) +  vmyo];
-    RATES[(rates_size * offset) + kss] = ( - ALGEBRAIC[(algebraic_size * offset) + ICaK]*CONSTANTS[(constant_size * offset) +  cm]*CONSTANTS[(constant_size * offset) +  Acap])/( CONSTANTS[(constant_size * offset) +  F]*CONSTANTS[(constant_size * offset) +  vss]) - ALGEBRAIC[(algebraic_size * offset) + JdiffK];
-    RATES[(rates_size * offset) + nai] = ( - (ALGEBRAIC[(algebraic_size * offset) + INa]+ALGEBRAIC[(algebraic_size * offset) + INaL]+ 3.00000*ALGEBRAIC[(algebraic_size * offset) + INaCa_i]+ 3.00000*ALGEBRAIC[(algebraic_size * offset) + INaK]+ALGEBRAIC[(algebraic_size * offset) + INab])*CONSTANTS[(constant_size * offset) +  Acap]*CONSTANTS[(constant_size * offset) +  cm])/( CONSTANTS[(constant_size * offset) +  F]*CONSTANTS[(constant_size * offset) +  vmyo])+( ALGEBRAIC[(algebraic_size * offset) + JdiffNa]*CONSTANTS[(constant_size * offset) +  vss])/CONSTANTS[(constant_size * offset) +  vmyo];
-    RATES[(rates_size * offset) + nass] = ( - (ALGEBRAIC[(algebraic_size * offset) + ICaNa]+ 3.00000*ALGEBRAIC[(algebraic_size * offset) + INaCa_ss])*CONSTANTS[(constant_size * offset) +  cm]*CONSTANTS[(constant_size * offset) +  Acap])/( CONSTANTS[(constant_size * offset) +  F]*CONSTANTS[(constant_size * offset) +  vss]) - ALGEBRAIC[(algebraic_size * offset) + JdiffNa];
-    RATES[(rates_size * offset) + V] = - (ALGEBRAIC[(algebraic_size * offset) + INa]+ALGEBRAIC[(algebraic_size * offset) + INaL]+ALGEBRAIC[(algebraic_size * offset) + Ito]+ALGEBRAIC[(algebraic_size * offset) + ICaL]+ALGEBRAIC[(algebraic_size * offset) + ICaNa]+ALGEBRAIC[(algebraic_size * offset) + ICaK]+ALGEBRAIC[(algebraic_size * offset) + IKr]+ALGEBRAIC[(algebraic_size * offset) + IKs]+ALGEBRAIC[(algebraic_size * offset) + IK1]+ALGEBRAIC[(algebraic_size * offset) + INaCa_i]+ALGEBRAIC[(algebraic_size * offset) + INaCa_ss]+ALGEBRAIC[(algebraic_size * offset) + INaK]+ALGEBRAIC[(algebraic_size * offset) + INab]+ALGEBRAIC[(algebraic_size * offset) + IKb]+ALGEBRAIC[(algebraic_size * offset) + IpCa]+ALGEBRAIC[(algebraic_size * offset) + ICab]+ALGEBRAIC[(algebraic_size * offset) + Istim]);
-    RATES[(rates_size * offset) + cass] =  ALGEBRAIC[(algebraic_size * offset) + Bcass]*((( - (ALGEBRAIC[(algebraic_size * offset) + ICaL] -  2.00000*ALGEBRAIC[(algebraic_size * offset) + INaCa_ss])*CONSTANTS[(constant_size * offset) +  cm]*CONSTANTS[(constant_size * offset) +  Acap])/( 2.00000*CONSTANTS[(constant_size * offset) +  F]*CONSTANTS[(constant_size * offset) +  vss])+( ALGEBRAIC[(algebraic_size * offset) + Jrel]*CONSTANTS[(constant_size * offset) +  vjsr])/CONSTANTS[(constant_size * offset) +  vss]) - ALGEBRAIC[(algebraic_size * offset) + Jdiff]);
-    RATES[(rates_size * offset) + cai] =  ALGEBRAIC[(algebraic_size * offset) + Bcai]*((( - ((ALGEBRAIC[(algebraic_size * offset) + IpCa]+ALGEBRAIC[(algebraic_size * offset) + ICab]) -  2.00000*ALGEBRAIC[(algebraic_size * offset) + INaCa_i])*CONSTANTS[(constant_size * offset) +  cm]*CONSTANTS[(constant_size * offset) +  Acap])/( 2.00000*CONSTANTS[(constant_size * offset) +  F]*CONSTANTS[(constant_size * offset) +  vmyo]) - ( ALGEBRAIC[(algebraic_size * offset) + Jup]*CONSTANTS[(constant_size * offset) +  vnsr])/CONSTANTS[(constant_size * offset) +  vmyo])+( ALGEBRAIC[(algebraic_size * offset) + Jdiff]*CONSTANTS[(constant_size * offset) +  vss])/CONSTANTS[(constant_size * offset) +  vmyo]);
-    RATES[(rates_size * offset) + cansr] = ALGEBRAIC[(algebraic_size * offset) + Jup] - ( ALGEBRAIC[(algebraic_size * offset) + Jtr]*CONSTANTS[(constant_size * offset) +  vjsr])/CONSTANTS[(constant_size * offset) +  vnsr];
-    RATES[(rates_size * offset) + cajsr] =  ALGEBRAIC[(algebraic_size * offset) + Bcajsr]*(ALGEBRAIC[(algebraic_size * offset) + Jtr] - ALGEBRAIC[(algebraic_size * offset) + Jrel]);
+ALGEBRAIC[(200 * offset) + hLss] = 1.00000/(1.00000+exp((STATES[(49 * offset) + V]+87.6100)/7.48800));
+ALGEBRAIC[(200 * offset) + hLssp] = 1.00000/(1.00000+exp((STATES[(49 * offset) + V]+93.8100)/7.48800));
+ALGEBRAIC[(200 * offset) + mss] = 1.00000/(1.00000+exp(- (STATES[(49 * offset) + V]+CONSTANTS[(206 * offset) + mssV1])/CONSTANTS[(206 * offset) + mssV2]));
+ALGEBRAIC[(200 * offset) + tm] = 1.00000/( CONSTANTS[(206 * offset) + mtD1]*exp((STATES[(49 * offset) + V]+CONSTANTS[(206 * offset) + mtV1])/CONSTANTS[(206 * offset) + mtV2])+ CONSTANTS[(206 * offset) + mtD2]*exp(- (STATES[(49 * offset) + V]+CONSTANTS[(206 * offset) + mtV3])/CONSTANTS[(206 * offset) + mtV4]));
+ALGEBRAIC[(200 * offset) + hss] = 1.00000/(1.00000+exp(((STATES[(49 * offset) + V]+CONSTANTS[(206 * offset) + hssV1]) - CONSTANTS[(206 * offset) + shift_INa_inact])/CONSTANTS[(206 * offset) + hssV2]));
+ALGEBRAIC[(200 * offset) + thf] = 1.00000/( 1.43200e-05*exp(- ((STATES[(49 * offset) + V]+1.19600) - CONSTANTS[(206 * offset) + shift_INa_inact])/6.28500)+ 6.14900*exp(((STATES[(49 * offset) + V]+0.509600) - CONSTANTS[(206 * offset) + shift_INa_inact])/20.2700));
+ALGEBRAIC[(200 * offset) + ths] = 1.00000/( 0.00979400*exp(- ((STATES[(49 * offset) + V]+17.9500) - CONSTANTS[(206 * offset) + shift_INa_inact])/28.0500)+ 0.334300*exp(((STATES[(49 * offset) + V]+5.73000) - CONSTANTS[(206 * offset) + shift_INa_inact])/56.6600));
+ALGEBRAIC[(200 * offset) + ass] = 1.00000/(1.00000+exp(- (STATES[(49 * offset) + V] - 14.3400)/14.8200));
+ALGEBRAIC[(200 * offset) + ta] = 1.05150/(1.00000/( 1.20890*(1.00000+exp(- (STATES[(49 * offset) + V] - 18.4099)/29.3814)))+3.50000/(1.00000+exp((STATES[(49 * offset) + V]+100.000)/29.3814)));
+ALGEBRAIC[(200 * offset) + dss] = 1.00000/(1.00000+exp(- (STATES[(49 * offset) + V]+3.94000)/4.23000));
+ALGEBRAIC[(200 * offset) + td] = 0.600000+1.00000/(exp( - 0.0500000*(STATES[(49 * offset) + V]+6.00000))+exp( 0.0900000*(STATES[(49 * offset) + V]+14.0000)));
+ALGEBRAIC[(200 * offset) + fss] = 1.00000/(1.00000+exp((STATES[(49 * offset) + V]+19.5800)/3.69600));
+ALGEBRAIC[(200 * offset) + tff] = 7.00000+1.00000/( 0.00450000*exp(- (STATES[(49 * offset) + V]+20.0000)/10.0000)+ 0.00450000*exp((STATES[(49 * offset) + V]+20.0000)/10.0000));
+ALGEBRAIC[(200 * offset) + tfs] = 1000.00+1.00000/( 3.50000e-05*exp(- (STATES[(49 * offset) + V]+5.00000)/4.00000)+ 3.50000e-05*exp((STATES[(49 * offset) + V]+5.00000)/6.00000));
+ALGEBRAIC[(200 * offset) + fcass] = ALGEBRAIC[(200 * offset) + fss];
+ALGEBRAIC[(200 * offset) + km2n] =  STATES[(49 * offset) + jca]*1.00000;
+ALGEBRAIC[(200 * offset) + anca] = 1.00000/(CONSTANTS[(206 * offset) + k2n]/ALGEBRAIC[(200 * offset) + km2n]+pow(1.00000+CONSTANTS[(206 * offset) + Kmn]/STATES[(49 * offset) + cass], 4.00000));
+ALGEBRAIC[(200 * offset) + xs1ss] = 1.00000/(1.00000+exp(- (STATES[(49 * offset) + V]+11.6000)/8.93200));
+ALGEBRAIC[(200 * offset) + txs1] = CONSTANTS[(206 * offset) + txs1_max]+1.00000/( 0.000232600*exp((STATES[(49 * offset) + V]+48.2800)/17.8000)+ 0.00129200*exp(- (STATES[(49 * offset) + V]+210.000)/230.000));
+ALGEBRAIC[(200 * offset) + xk1ss] = 1.00000/(1.00000+exp(- (STATES[(49 * offset) + V]+ 2.55380*CONSTANTS[(206 * offset) + ko]+144.590)/( 1.56920*CONSTANTS[(206 * offset) + ko]+3.81150)));
+ALGEBRAIC[(200 * offset) + txk1] = 122.200/(exp(- (STATES[(49 * offset) + V]+127.200)/20.3600)+exp((STATES[(49 * offset) + V]+236.800)/69.3300));
+ALGEBRAIC[(200 * offset) + CaMKb] = ( CONSTANTS[(206 * offset) + CaMKo]*(1.00000 - STATES[(49 * offset) + CaMKt]))/(1.00000+CONSTANTS[(206 * offset) + KmCaM]/STATES[(49 * offset) + cass]);
+ALGEBRAIC[(200 * offset) + jss] = ALGEBRAIC[(200 * offset) + hss];
+ALGEBRAIC[(200 * offset) + tj] = 2.03800+1.00000/( 0.0213600*exp(- ((STATES[(49 * offset) + V]+100.600) - CONSTANTS[(206 * offset) + shift_INa_inact])/8.28100)+ 0.305200*exp(((STATES[(49 * offset) + V]+0.994100) - CONSTANTS[(206 * offset) + shift_INa_inact])/38.4500));
+ALGEBRAIC[(200 * offset) + assp] = 1.00000/(1.00000+exp(- (STATES[(49 * offset) + V] - 24.3400)/14.8200));
+ALGEBRAIC[(200 * offset) + tfcaf] = 7.00000+1.00000/( 0.0400000*exp(- (STATES[(49 * offset) + V] - 4.00000)/7.00000)+ 0.0400000*exp((STATES[(49 * offset) + V] - 4.00000)/7.00000));
+ALGEBRAIC[(200 * offset) + tfcas] = 100.000+1.00000/( 0.000120000*exp(- STATES[(49 * offset) + V]/3.00000)+ 0.000120000*exp(STATES[(49 * offset) + V]/7.00000));
+ALGEBRAIC[(200 * offset) + tffp] =  2.50000*ALGEBRAIC[(200 * offset) + tff];
+ALGEBRAIC[(200 * offset) + xs2ss] = ALGEBRAIC[(200 * offset) + xs1ss];
+ALGEBRAIC[(200 * offset) + txs2] = 1.00000/( 0.0100000*exp((STATES[(49 * offset) + V] - 50.0000)/20.0000)+ 0.0193000*exp(- (STATES[(49 * offset) + V]+66.5400)/31.0000));
+ALGEBRAIC[(200 * offset) + hssp] = 1.00000/(1.00000+exp(((STATES[(49 * offset) + V]+89.1000) - CONSTANTS[(206 * offset) + shift_INa_inact])/6.08600));
+ALGEBRAIC[(200 * offset) + thsp] =  3.00000*ALGEBRAIC[(200 * offset) + ths];
+ALGEBRAIC[(200 * offset) + tjp] =  1.46000*ALGEBRAIC[(200 * offset) + tj];
+ALGEBRAIC[(200 * offset) + mLss] = 1.00000/(1.00000+exp(- (STATES[(49 * offset) + V]+42.8500)/5.26400));
+ALGEBRAIC[(200 * offset) + tmL] = ALGEBRAIC[(200 * offset) + tm];
+ALGEBRAIC[(200 * offset) + tfcafp] =  2.50000*ALGEBRAIC[(200 * offset) + tfcaf];
+ALGEBRAIC[(200 * offset) + iss] = 1.00000/(1.00000+exp((STATES[(49 * offset) + V]+43.9400)/5.71100));
+ALGEBRAIC[(200 * offset) + delta_epi] = (CONSTANTS[(206 * offset) + celltype]==1.00000 ? 1.00000 - 0.950000/(1.00000+exp((STATES[(49 * offset) + V]+70.0000)/5.00000)) : 1.00000);
+ALGEBRAIC[(200 * offset) + tiF_b] = 4.56200+1.00000/( 0.393300*exp(- (STATES[(49 * offset) + V]+100.000)/100.000)+ 0.0800400*exp((STATES[(49 * offset) + V]+50.0000)/16.5900));
+ALGEBRAIC[(200 * offset) + tiF] =  ALGEBRAIC[(200 * offset) + tiF_b]*ALGEBRAIC[(200 * offset) + delta_epi];
+ALGEBRAIC[(200 * offset) + tiS_b] = 23.6200+1.00000/( 0.00141600*exp(- (STATES[(49 * offset) + V]+96.5200)/59.0500)+ 1.78000e-08*exp((STATES[(49 * offset) + V]+114.100)/8.07900));
+ALGEBRAIC[(200 * offset) + tiS] =  ALGEBRAIC[(200 * offset) + tiS_b]*ALGEBRAIC[(200 * offset) + delta_epi];
+ALGEBRAIC[(200 * offset) + dti_develop] = 1.35400+0.000100000/(exp((STATES[(49 * offset) + V] - 167.400)/15.8900)+exp(- (STATES[(49 * offset) + V] - 12.2300)/0.215400));
+ALGEBRAIC[(200 * offset) + dti_recover] = 1.00000 - 0.500000/(1.00000+exp((STATES[(49 * offset) + V]+70.0000)/20.0000));
+ALGEBRAIC[(200 * offset) + tiFp] =  ALGEBRAIC[(200 * offset) + dti_develop]*ALGEBRAIC[(200 * offset) + dti_recover]*ALGEBRAIC[(200 * offset) + tiF];
+ALGEBRAIC[(200 * offset) + tiSp] =  ALGEBRAIC[(200 * offset) + dti_develop]*ALGEBRAIC[(200 * offset) + dti_recover]*ALGEBRAIC[(200 * offset) + tiS];
+ALGEBRAIC[(200 * offset) + f] =  CONSTANTS[(206 * offset) + Aff]*STATES[(49 * offset) + ff]+ CONSTANTS[(206 * offset) + Afs]*STATES[(49 * offset) + fs];
+ALGEBRAIC[(200 * offset) + Afcaf] = 0.300000+0.600000/(1.00000+exp((STATES[(49 * offset) + V] - 10.0000)/10.0000));
+ALGEBRAIC[(200 * offset) + Afcas] = 1.00000 - ALGEBRAIC[(200 * offset) + Afcaf];
+ALGEBRAIC[(200 * offset) + fca] =  ALGEBRAIC[(200 * offset) + Afcaf]*STATES[(49 * offset) + fcaf]+ ALGEBRAIC[(200 * offset) + Afcas]*STATES[(49 * offset) + fcas];
+ALGEBRAIC[(200 * offset) + fp] =  CONSTANTS[(206 * offset) + Aff]*STATES[(49 * offset) + ffp]+ CONSTANTS[(206 * offset) + Afs]*STATES[(49 * offset) + fs];
+ALGEBRAIC[(200 * offset) + fcap] =  ALGEBRAIC[(200 * offset) + Afcaf]*STATES[(49 * offset) + fcafp]+ ALGEBRAIC[(200 * offset) + Afcas]*STATES[(49 * offset) + fcas];
+ALGEBRAIC[(200 * offset) + vfrt] =  STATES[(49 * offset) + V]*CONSTANTS[(206 * offset) + frt];
+ALGEBRAIC[(200 * offset) + A_1] = ( 4.00000*CONSTANTS[(206 * offset) + ffrt]*( STATES[(49 * offset) + cass]*exp( 2.00000*ALGEBRAIC[(200 * offset) + vfrt]) -  0.341000*CONSTANTS[(206 * offset) + cao]))/CONSTANTS[(206 * offset) + B_1];
+ALGEBRAIC[(200 * offset) + U_1] =  CONSTANTS[(206 * offset) + B_1]*(STATES[(49 * offset) + V] - CONSTANTS[(206 * offset) + v0_CaL]);
+ALGEBRAIC[(200 * offset) + PhiCaL] = (- 1.00000e-07<=ALGEBRAIC[(200 * offset) + U_1]&&ALGEBRAIC[(200 * offset) + U_1]<=1.00000e-07 ?  ALGEBRAIC[(200 * offset) + A_1]*(1.00000 -  0.500000*ALGEBRAIC[(200 * offset) + U_1]) : ( ALGEBRAIC[(200 * offset) + A_1]*ALGEBRAIC[(200 * offset) + U_1])/(exp(ALGEBRAIC[(200 * offset) + U_1]) - 1.00000));
+ALGEBRAIC[(200 * offset) + CaMKa] = ALGEBRAIC[(200 * offset) + CaMKb]+STATES[(49 * offset) + CaMKt];
+ALGEBRAIC[(200 * offset) + fICaLp] = 1.00000/(1.00000+CONSTANTS[(206 * offset) + KmCaMK]/ALGEBRAIC[(200 * offset) + CaMKa]);
+ALGEBRAIC[(200 * offset) + ICaL] =  (1.00000 - ALGEBRAIC[(200 * offset) + fICaLp])*CONSTANTS[(206 * offset) + PCa]*ALGEBRAIC[(200 * offset) + PhiCaL]*STATES[(49 * offset) + d]*( ALGEBRAIC[(200 * offset) + f]*(1.00000 - STATES[(49 * offset) + nca])+ STATES[(49 * offset) + jca]*ALGEBRAIC[(200 * offset) + fca]*STATES[(49 * offset) + nca])+ ALGEBRAIC[(200 * offset) + fICaLp]*CONSTANTS[(206 * offset) + PCap]*ALGEBRAIC[(200 * offset) + PhiCaL]*STATES[(49 * offset) + d]*( ALGEBRAIC[(200 * offset) + fp]*(1.00000 - STATES[(49 * offset) + nca])+ STATES[(49 * offset) + jca]*ALGEBRAIC[(200 * offset) + fcap]*STATES[(49 * offset) + nca]);
+ALGEBRAIC[(200 * offset) + Jrel_inf_temp] = ( CONSTANTS[(206 * offset) + a_rel]*- ALGEBRAIC[(200 * offset) + ICaL])/(1.00000+ 1.00000*pow(1.50000/STATES[(49 * offset) + cajsr], 8.00000));
+ALGEBRAIC[(200 * offset) + Jrel_inf] = (CONSTANTS[(206 * offset) + celltype]==2.00000 ?  ALGEBRAIC[(200 * offset) + Jrel_inf_temp]*1.70000 : ALGEBRAIC[(200 * offset) + Jrel_inf_temp]);
+ALGEBRAIC[(200 * offset) + tau_rel_temp] = CONSTANTS[(206 * offset) + bt]/(1.00000+0.0123000/STATES[(49 * offset) + cajsr]);
+ALGEBRAIC[(200 * offset) + tau_rel] = (ALGEBRAIC[(200 * offset) + tau_rel_temp]<0.00100000 ? 0.00100000 : ALGEBRAIC[(200 * offset) + tau_rel_temp]);
+ALGEBRAIC[(200 * offset) + Jrel_temp] = ( CONSTANTS[(206 * offset) + a_relp]*- ALGEBRAIC[(200 * offset) + ICaL])/(1.00000+pow(1.50000/STATES[(49 * offset) + cajsr], 8.00000));
+ALGEBRAIC[(200 * offset) + Jrel_infp] = (CONSTANTS[(206 * offset) + celltype]==2.00000 ?  ALGEBRAIC[(200 * offset) + Jrel_temp]*1.70000 : ALGEBRAIC[(200 * offset) + Jrel_temp]);
+ALGEBRAIC[(200 * offset) + tau_relp_temp] = CONSTANTS[(206 * offset) + btp]/(1.00000+0.0123000/STATES[(49 * offset) + cajsr]);
+ALGEBRAIC[(200 * offset) + tau_relp] = (ALGEBRAIC[(200 * offset) + tau_relp_temp]<0.00100000 ? 0.00100000 : ALGEBRAIC[(200 * offset) + tau_relp_temp]);
+ALGEBRAIC[(200 * offset) + EK] =  (( CONSTANTS[(206 * offset) + R]*CONSTANTS[(206 * offset) + T])/CONSTANTS[(206 * offset) + F])*log(CONSTANTS[(206 * offset) + ko]/STATES[(49 * offset) + ki]);
+ALGEBRAIC[(200 * offset) + AiF] = 1.00000/(1.00000+exp((STATES[(49 * offset) + V] - 213.600)/151.200));
+ALGEBRAIC[(200 * offset) + AiS] = 1.00000 - ALGEBRAIC[(200 * offset) + AiF];
+ALGEBRAIC[(200 * offset) + i] =  ALGEBRAIC[(200 * offset) + AiF]*STATES[(49 * offset) + iF]+ ALGEBRAIC[(200 * offset) + AiS]*STATES[(49 * offset) + iS];
+ALGEBRAIC[(200 * offset) + ip] =  ALGEBRAIC[(200 * offset) + AiF]*STATES[(49 * offset) + iFp]+ ALGEBRAIC[(200 * offset) + AiS]*STATES[(49 * offset) + iSp];
+ALGEBRAIC[(200 * offset) + fItop] = 1.00000/(1.00000+CONSTANTS[(206 * offset) + KmCaMK]/ALGEBRAIC[(200 * offset) + CaMKa]);
+ALGEBRAIC[(200 * offset) + Ito] =  CONSTANTS[(206 * offset) + Gto]*(STATES[(49 * offset) + V] - ALGEBRAIC[(200 * offset) + EK])*( (1.00000 - ALGEBRAIC[(200 * offset) + fItop])*STATES[(49 * offset) + a]*ALGEBRAIC[(200 * offset) + i]+ ALGEBRAIC[(200 * offset) + fItop]*STATES[(49 * offset) + ap]*ALGEBRAIC[(200 * offset) + ip]);
+ALGEBRAIC[(200 * offset) + IKr] =  CONSTANTS[(206 * offset) + GKr]* pow((CONSTANTS[(206 * offset) + ko]/5.40000), 1.0 / 2)*STATES[(49 * offset) + O]*(STATES[(49 * offset) + V] - ALGEBRAIC[(200 * offset) + EK]);
+ALGEBRAIC[(200 * offset) + EKs] =  (( CONSTANTS[(206 * offset) + R]*CONSTANTS[(206 * offset) + T])/CONSTANTS[(206 * offset) + F])*log((CONSTANTS[(206 * offset) + ko]+ CONSTANTS[(206 * offset) + PKNa]*CONSTANTS[(206 * offset) + nao])/(STATES[(49 * offset) + ki]+ CONSTANTS[(206 * offset) + PKNa]*STATES[(49 * offset) + nai]));
+ALGEBRAIC[(200 * offset) + KsCa] = 1.00000+0.600000/(1.00000+pow(3.80000e-05/STATES[(49 * offset) + cai], 1.40000));
+ALGEBRAIC[(200 * offset) + IKs] =  CONSTANTS[(206 * offset) + GKs]*ALGEBRAIC[(200 * offset) + KsCa]*STATES[(49 * offset) + xs1]*STATES[(49 * offset) + xs2]*(STATES[(49 * offset) + V] - ALGEBRAIC[(200 * offset) + EKs]);
+ALGEBRAIC[(200 * offset) + rk1] = 1.00000/(1.00000+exp(((STATES[(49 * offset) + V]+105.800) -  2.60000*CONSTANTS[(206 * offset) + ko])/9.49300));
+ALGEBRAIC[(200 * offset) + IK1] =  CONSTANTS[(206 * offset) + GK1]* pow(CONSTANTS[(206 * offset) + ko], 1.0 / 2)*ALGEBRAIC[(200 * offset) + rk1]*STATES[(49 * offset) + xk1]*(STATES[(49 * offset) + V] - ALGEBRAIC[(200 * offset) + EK]);
+ALGEBRAIC[(200 * offset) + Knao] =  CONSTANTS[(206 * offset) + Knao0]*exp(( (1.00000 - CONSTANTS[(206 * offset) + delta])*STATES[(49 * offset) + V]*CONSTANTS[(206 * offset) + F])/( 3.00000*CONSTANTS[(206 * offset) + R]*CONSTANTS[(206 * offset) + T]));
+ALGEBRAIC[(200 * offset) + a3] = ( CONSTANTS[(206 * offset) + k3p]*pow(CONSTANTS[(206 * offset) + ko]/CONSTANTS[(206 * offset) + Kko], 2.00000))/((pow(1.00000+CONSTANTS[(206 * offset) + nao]/ALGEBRAIC[(200 * offset) + Knao], 3.00000)+pow(1.00000+CONSTANTS[(206 * offset) + ko]/CONSTANTS[(206 * offset) + Kko], 2.00000)) - 1.00000);
+ALGEBRAIC[(200 * offset) + P] = CONSTANTS[(206 * offset) + eP]/(1.00000+CONSTANTS[(206 * offset) + H]/CONSTANTS[(206 * offset) + Khp]+STATES[(49 * offset) + nai]/CONSTANTS[(206 * offset) + Knap]+STATES[(49 * offset) + ki]/CONSTANTS[(206 * offset) + Kxkur]);
+ALGEBRAIC[(200 * offset) + b3] = ( CONSTANTS[(206 * offset) + k3m]*ALGEBRAIC[(200 * offset) + P]*CONSTANTS[(206 * offset) + H])/(1.00000+CONSTANTS[(206 * offset) + MgATP]/CONSTANTS[(206 * offset) + Kmgatp]);
+ALGEBRAIC[(200 * offset) + Knai] =  CONSTANTS[(206 * offset) + Knai0]*exp(( CONSTANTS[(206 * offset) + delta]*STATES[(49 * offset) + V]*CONSTANTS[(206 * offset) + F])/( 3.00000*CONSTANTS[(206 * offset) + R]*CONSTANTS[(206 * offset) + T]));
+ALGEBRAIC[(200 * offset) + a1] = ( CONSTANTS[(206 * offset) + k1p]*pow(STATES[(49 * offset) + nai]/ALGEBRAIC[(200 * offset) + Knai], 3.00000))/((pow(1.00000+STATES[(49 * offset) + nai]/ALGEBRAIC[(200 * offset) + Knai], 3.00000)+pow(1.00000+STATES[(49 * offset) + ki]/CONSTANTS[(206 * offset) + Kki], 2.00000)) - 1.00000);
+ALGEBRAIC[(200 * offset) + b2] = ( CONSTANTS[(206 * offset) + k2m]*pow(CONSTANTS[(206 * offset) + nao]/ALGEBRAIC[(200 * offset) + Knao], 3.00000))/((pow(1.00000+CONSTANTS[(206 * offset) + nao]/ALGEBRAIC[(200 * offset) + Knao], 3.00000)+pow(1.00000+CONSTANTS[(206 * offset) + ko]/CONSTANTS[(206 * offset) + Kko], 2.00000)) - 1.00000);
+ALGEBRAIC[(200 * offset) + b4] = ( CONSTANTS[(206 * offset) + k4m]*pow(STATES[(49 * offset) + ki]/CONSTANTS[(206 * offset) + Kki], 2.00000))/((pow(1.00000+STATES[(49 * offset) + nai]/ALGEBRAIC[(200 * offset) + Knai], 3.00000)+pow(1.00000+STATES[(49 * offset) + ki]/CONSTANTS[(206 * offset) + Kki], 2.00000)) - 1.00000);
+ALGEBRAIC[(200 * offset) + x1] =  CONSTANTS[(206 * offset) + a4]*ALGEBRAIC[(200 * offset) + a1]*CONSTANTS[(206 * offset) + a2]+ ALGEBRAIC[(200 * offset) + b2]*ALGEBRAIC[(200 * offset) + b4]*ALGEBRAIC[(200 * offset) + b3]+ CONSTANTS[(206 * offset) + a2]*ALGEBRAIC[(200 * offset) + b4]*ALGEBRAIC[(200 * offset) + b3]+ ALGEBRAIC[(200 * offset) + b3]*ALGEBRAIC[(200 * offset) + a1]*CONSTANTS[(206 * offset) + a2];
+ALGEBRAIC[(200 * offset) + x2] =  ALGEBRAIC[(200 * offset) + b2]*CONSTANTS[(206 * offset) + b1]*ALGEBRAIC[(200 * offset) + b4]+ ALGEBRAIC[(200 * offset) + a1]*CONSTANTS[(206 * offset) + a2]*ALGEBRAIC[(200 * offset) + a3]+ ALGEBRAIC[(200 * offset) + a3]*CONSTANTS[(206 * offset) + b1]*ALGEBRAIC[(200 * offset) + b4]+ CONSTANTS[(206 * offset) + a2]*ALGEBRAIC[(200 * offset) + a3]*ALGEBRAIC[(200 * offset) + b4];
+ALGEBRAIC[(200 * offset) + x3] =  CONSTANTS[(206 * offset) + a2]*ALGEBRAIC[(200 * offset) + a3]*CONSTANTS[(206 * offset) + a4]+ ALGEBRAIC[(200 * offset) + b3]*ALGEBRAIC[(200 * offset) + b2]*CONSTANTS[(206 * offset) + b1]+ ALGEBRAIC[(200 * offset) + b2]*CONSTANTS[(206 * offset) + b1]*CONSTANTS[(206 * offset) + a4]+ ALGEBRAIC[(200 * offset) + a3]*CONSTANTS[(206 * offset) + a4]*CONSTANTS[(206 * offset) + b1];
+ALGEBRAIC[(200 * offset) + x4] =  ALGEBRAIC[(200 * offset) + b4]*ALGEBRAIC[(200 * offset) + b3]*ALGEBRAIC[(200 * offset) + b2]+ ALGEBRAIC[(200 * offset) + a3]*CONSTANTS[(206 * offset) + a4]*ALGEBRAIC[(200 * offset) + a1]+ ALGEBRAIC[(200 * offset) + b2]*CONSTANTS[(206 * offset) + a4]*ALGEBRAIC[(200 * offset) + a1]+ ALGEBRAIC[(200 * offset) + b3]*ALGEBRAIC[(200 * offset) + b2]*ALGEBRAIC[(200 * offset) + a1];
+ALGEBRAIC[(200 * offset) + E1] = ALGEBRAIC[(200 * offset) + x1]/(ALGEBRAIC[(200 * offset) + x1]+ALGEBRAIC[(200 * offset) + x2]+ALGEBRAIC[(200 * offset) + x3]+ALGEBRAIC[(200 * offset) + x4]);
+ALGEBRAIC[(200 * offset) + E2] = ALGEBRAIC[(200 * offset) + x2]/(ALGEBRAIC[(200 * offset) + x1]+ALGEBRAIC[(200 * offset) + x2]+ALGEBRAIC[(200 * offset) + x3]+ALGEBRAIC[(200 * offset) + x4]);
+ALGEBRAIC[(200 * offset) + JnakNa] =  3.00000*( ALGEBRAIC[(200 * offset) + E1]*ALGEBRAIC[(200 * offset) + a3] -  ALGEBRAIC[(200 * offset) + E2]*ALGEBRAIC[(200 * offset) + b3]);
+ALGEBRAIC[(200 * offset) + E3] = ALGEBRAIC[(200 * offset) + x3]/(ALGEBRAIC[(200 * offset) + x1]+ALGEBRAIC[(200 * offset) + x2]+ALGEBRAIC[(200 * offset) + x3]+ALGEBRAIC[(200 * offset) + x4]);
+ALGEBRAIC[(200 * offset) + E4] = ALGEBRAIC[(200 * offset) + x4]/(ALGEBRAIC[(200 * offset) + x1]+ALGEBRAIC[(200 * offset) + x2]+ALGEBRAIC[(200 * offset) + x3]+ALGEBRAIC[(200 * offset) + x4]);
+ALGEBRAIC[(200 * offset) + JnakK] =  2.00000*( ALGEBRAIC[(200 * offset) + E4]*CONSTANTS[(206 * offset) + b1] -  ALGEBRAIC[(200 * offset) + E3]*ALGEBRAIC[(200 * offset) + a1]);
+ALGEBRAIC[(200 * offset) + INaK] =  CONSTANTS[(206 * offset) + Pnak]*( CONSTANTS[(206 * offset) + zna]*ALGEBRAIC[(200 * offset) + JnakNa]+ CONSTANTS[(206 * offset) + zk]*ALGEBRAIC[(200 * offset) + JnakK]);
+ALGEBRAIC[(200 * offset) + xkb] = 1.00000/(1.00000+exp(- (STATES[(49 * offset) + V] - 14.4800)/18.3400));
+ALGEBRAIC[(200 * offset) + IKb] =  CONSTANTS[(206 * offset) + GKb]*ALGEBRAIC[(200 * offset) + xkb]*(STATES[(49 * offset) + V] - ALGEBRAIC[(200 * offset) + EK]);
+ALGEBRAIC[(200 * offset) + Istim] = (TIME>=CONSTANTS[(206 * offset) + stim_start]&&TIME<=CONSTANTS[(206 * offset) + stim_end]&&(TIME - CONSTANTS[(206 * offset) + stim_start]) -  floor((TIME - CONSTANTS[(206 * offset) + stim_start])/CONSTANTS[(206 * offset) + BCL])*CONSTANTS[(206 * offset) + BCL]<=CONSTANTS[(206 * offset) + duration] ? CONSTANTS[(206 * offset) + amp] : 0.000000);
+ALGEBRAIC[(200 * offset) + JdiffK] = (STATES[(49 * offset) + kss] - STATES[(49 * offset) + ki])/2.00000;
+ALGEBRAIC[(200 * offset) + A_3] = ( 0.750000*CONSTANTS[(206 * offset) + ffrt]*( STATES[(49 * offset) + kss]*exp(ALGEBRAIC[(200 * offset) + vfrt]) - CONSTANTS[(206 * offset) + ko]))/CONSTANTS[(206 * offset) + B_3];
+ALGEBRAIC[(200 * offset) + U_3] =  CONSTANTS[(206 * offset) + B_3]*(STATES[(49 * offset) + V] - CONSTANTS[(206 * offset) + v0_CaL]);
+ALGEBRAIC[(200 * offset) + PhiCaK] = (- 1.00000e-07<=ALGEBRAIC[(200 * offset) + U_3]&&ALGEBRAIC[(200 * offset) + U_3]<=1.00000e-07 ?  ALGEBRAIC[(200 * offset) + A_3]*(1.00000 -  0.500000*ALGEBRAIC[(200 * offset) + U_3]) : ( ALGEBRAIC[(200 * offset) + A_3]*ALGEBRAIC[(200 * offset) + U_3])/(exp(ALGEBRAIC[(200 * offset) + U_3]) - 1.00000));
+ALGEBRAIC[(200 * offset) + ICaK] =  (1.00000 - ALGEBRAIC[(200 * offset) + fICaLp])*CONSTANTS[(206 * offset) + PCaK]*ALGEBRAIC[(200 * offset) + PhiCaK]*STATES[(49 * offset) + d]*( ALGEBRAIC[(200 * offset) + f]*(1.00000 - STATES[(49 * offset) + nca])+ STATES[(49 * offset) + jca]*ALGEBRAIC[(200 * offset) + fca]*STATES[(49 * offset) + nca])+ ALGEBRAIC[(200 * offset) + fICaLp]*CONSTANTS[(206 * offset) + PCaKp]*ALGEBRAIC[(200 * offset) + PhiCaK]*STATES[(49 * offset) + d]*( ALGEBRAIC[(200 * offset) + fp]*(1.00000 - STATES[(49 * offset) + nca])+ STATES[(49 * offset) + jca]*ALGEBRAIC[(200 * offset) + fcap]*STATES[(49 * offset) + nca]);
+ALGEBRAIC[(200 * offset) + ENa] =  (( CONSTANTS[(206 * offset) + R]*CONSTANTS[(206 * offset) + T])/CONSTANTS[(206 * offset) + F])*log(CONSTANTS[(206 * offset) + nao]/STATES[(49 * offset) + nai]);
+ALGEBRAIC[(200 * offset) + h] =  CONSTANTS[(206 * offset) + Ahf]*STATES[(49 * offset) + hf]+ CONSTANTS[(206 * offset) + Ahs]*STATES[(49 * offset) + hs];
+ALGEBRAIC[(200 * offset) + hp] =  CONSTANTS[(206 * offset) + Ahf]*STATES[(49 * offset) + hf]+ CONSTANTS[(206 * offset) + Ahs]*STATES[(49 * offset) + hsp];
+ALGEBRAIC[(200 * offset) + fINap] = 1.00000/(1.00000+CONSTANTS[(206 * offset) + KmCaMK]/ALGEBRAIC[(200 * offset) + CaMKa]);
+ALGEBRAIC[(200 * offset) + INa] =  CONSTANTS[(206 * offset) + GNa]*(STATES[(49 * offset) + V] - ALGEBRAIC[(200 * offset) + ENa])*pow(STATES[(49 * offset) + m], 3.00000)*( (1.00000 - ALGEBRAIC[(200 * offset) + fINap])*ALGEBRAIC[(200 * offset) + h]*STATES[(49 * offset) + j]+ ALGEBRAIC[(200 * offset) + fINap]*ALGEBRAIC[(200 * offset) + hp]*STATES[(49 * offset) + jp]);
+ALGEBRAIC[(200 * offset) + fINaLp] = 1.00000/(1.00000+CONSTANTS[(206 * offset) + KmCaMK]/ALGEBRAIC[(200 * offset) + CaMKa]);
+ALGEBRAIC[(200 * offset) + INaL] =  CONSTANTS[(206 * offset) + GNaL]*(STATES[(49 * offset) + V] - ALGEBRAIC[(200 * offset) + ENa])*STATES[(49 * offset) + mL]*( (1.00000 - ALGEBRAIC[(200 * offset) + fINaLp])*STATES[(49 * offset) + hL]+ ALGEBRAIC[(200 * offset) + fINaLp]*STATES[(49 * offset) + hLp]);
+ALGEBRAIC[(200 * offset) + allo_i] = 1.00000/(1.00000+pow(CONSTANTS[(206 * offset) + KmCaAct]/STATES[(49 * offset) + cai], 2.00000));
+ALGEBRAIC[(200 * offset) + hna] = exp(( CONSTANTS[(206 * offset) + qna]*STATES[(49 * offset) + V]*CONSTANTS[(206 * offset) + F])/( CONSTANTS[(206 * offset) + R]*CONSTANTS[(206 * offset) + T]));
+ALGEBRAIC[(200 * offset) + h7_i] = 1.00000+ (CONSTANTS[(206 * offset) + nao]/CONSTANTS[(206 * offset) + kna3])*(1.00000+1.00000/ALGEBRAIC[(200 * offset) + hna]);
+ALGEBRAIC[(200 * offset) + h8_i] = CONSTANTS[(206 * offset) + nao]/( CONSTANTS[(206 * offset) + kna3]*ALGEBRAIC[(200 * offset) + hna]*ALGEBRAIC[(200 * offset) + h7_i]);
+ALGEBRAIC[(200 * offset) + k3pp_i] =  ALGEBRAIC[(200 * offset) + h8_i]*CONSTANTS[(206 * offset) + wnaca];
+ALGEBRAIC[(200 * offset) + h1_i] = 1.00000+ (STATES[(49 * offset) + nai]/CONSTANTS[(206 * offset) + kna3])*(1.00000+ALGEBRAIC[(200 * offset) + hna]);
+ALGEBRAIC[(200 * offset) + h2_i] = ( STATES[(49 * offset) + nai]*ALGEBRAIC[(200 * offset) + hna])/( CONSTANTS[(206 * offset) + kna3]*ALGEBRAIC[(200 * offset) + h1_i]);
+ALGEBRAIC[(200 * offset) + k4pp_i] =  ALGEBRAIC[(200 * offset) + h2_i]*CONSTANTS[(206 * offset) + wnaca];
+ALGEBRAIC[(200 * offset) + h4_i] = 1.00000+ (STATES[(49 * offset) + nai]/CONSTANTS[(206 * offset) + kna1])*(1.00000+STATES[(49 * offset) + nai]/CONSTANTS[(206 * offset) + kna2]);
+ALGEBRAIC[(200 * offset) + h5_i] = ( STATES[(49 * offset) + nai]*STATES[(49 * offset) + nai])/( ALGEBRAIC[(200 * offset) + h4_i]*CONSTANTS[(206 * offset) + kna1]*CONSTANTS[(206 * offset) + kna2]);
+ALGEBRAIC[(200 * offset) + k7_i] =  ALGEBRAIC[(200 * offset) + h5_i]*ALGEBRAIC[(200 * offset) + h2_i]*CONSTANTS[(206 * offset) + wna];
+ALGEBRAIC[(200 * offset) + k8_i] =  ALGEBRAIC[(200 * offset) + h8_i]*CONSTANTS[(206 * offset) + h11_i]*CONSTANTS[(206 * offset) + wna];
+ALGEBRAIC[(200 * offset) + h9_i] = 1.00000/ALGEBRAIC[(200 * offset) + h7_i];
+ALGEBRAIC[(200 * offset) + k3p_i] =  ALGEBRAIC[(200 * offset) + h9_i]*CONSTANTS[(206 * offset) + wca];
+ALGEBRAIC[(200 * offset) + k3_i] = ALGEBRAIC[(200 * offset) + k3p_i]+ALGEBRAIC[(200 * offset) + k3pp_i];
+ALGEBRAIC[(200 * offset) + hca] = exp(( CONSTANTS[(206 * offset) + qca]*STATES[(49 * offset) + V]*CONSTANTS[(206 * offset) + F])/( CONSTANTS[(206 * offset) + R]*CONSTANTS[(206 * offset) + T]));
+ALGEBRAIC[(200 * offset) + h3_i] = 1.00000/ALGEBRAIC[(200 * offset) + h1_i];
+ALGEBRAIC[(200 * offset) + k4p_i] = ( ALGEBRAIC[(200 * offset) + h3_i]*CONSTANTS[(206 * offset) + wca])/ALGEBRAIC[(200 * offset) + hca];
+ALGEBRAIC[(200 * offset) + k4_i] = ALGEBRAIC[(200 * offset) + k4p_i]+ALGEBRAIC[(200 * offset) + k4pp_i];
+ALGEBRAIC[(200 * offset) + h6_i] = 1.00000/ALGEBRAIC[(200 * offset) + h4_i];
+ALGEBRAIC[(200 * offset) + k6_i] =  ALGEBRAIC[(200 * offset) + h6_i]*STATES[(49 * offset) + cai]*CONSTANTS[(206 * offset) + kcaon];
+ALGEBRAIC[(200 * offset) + x1_i] =  CONSTANTS[(206 * offset) + k2_i]*ALGEBRAIC[(200 * offset) + k4_i]*(ALGEBRAIC[(200 * offset) + k7_i]+ALGEBRAIC[(200 * offset) + k6_i])+ CONSTANTS[(206 * offset) + k5_i]*ALGEBRAIC[(200 * offset) + k7_i]*(CONSTANTS[(206 * offset) + k2_i]+ALGEBRAIC[(200 * offset) + k3_i]);
+ALGEBRAIC[(200 * offset) + x2_i] =  CONSTANTS[(206 * offset) + k1_i]*ALGEBRAIC[(200 * offset) + k7_i]*(ALGEBRAIC[(200 * offset) + k4_i]+CONSTANTS[(206 * offset) + k5_i])+ ALGEBRAIC[(200 * offset) + k4_i]*ALGEBRAIC[(200 * offset) + k6_i]*(CONSTANTS[(206 * offset) + k1_i]+ALGEBRAIC[(200 * offset) + k8_i]);
+ALGEBRAIC[(200 * offset) + x3_i] =  CONSTANTS[(206 * offset) + k1_i]*ALGEBRAIC[(200 * offset) + k3_i]*(ALGEBRAIC[(200 * offset) + k7_i]+ALGEBRAIC[(200 * offset) + k6_i])+ ALGEBRAIC[(200 * offset) + k8_i]*ALGEBRAIC[(200 * offset) + k6_i]*(CONSTANTS[(206 * offset) + k2_i]+ALGEBRAIC[(200 * offset) + k3_i]);
+ALGEBRAIC[(200 * offset) + x4_i] =  CONSTANTS[(206 * offset) + k2_i]*ALGEBRAIC[(200 * offset) + k8_i]*(ALGEBRAIC[(200 * offset) + k4_i]+CONSTANTS[(206 * offset) + k5_i])+ ALGEBRAIC[(200 * offset) + k3_i]*CONSTANTS[(206 * offset) + k5_i]*(CONSTANTS[(206 * offset) + k1_i]+ALGEBRAIC[(200 * offset) + k8_i]);
+ALGEBRAIC[(200 * offset) + E1_i] = ALGEBRAIC[(200 * offset) + x1_i]/(ALGEBRAIC[(200 * offset) + x1_i]+ALGEBRAIC[(200 * offset) + x2_i]+ALGEBRAIC[(200 * offset) + x3_i]+ALGEBRAIC[(200 * offset) + x4_i]);
+ALGEBRAIC[(200 * offset) + E2_i] = ALGEBRAIC[(200 * offset) + x2_i]/(ALGEBRAIC[(200 * offset) + x1_i]+ALGEBRAIC[(200 * offset) + x2_i]+ALGEBRAIC[(200 * offset) + x3_i]+ALGEBRAIC[(200 * offset) + x4_i]);
+ALGEBRAIC[(200 * offset) + E3_i] = ALGEBRAIC[(200 * offset) + x3_i]/(ALGEBRAIC[(200 * offset) + x1_i]+ALGEBRAIC[(200 * offset) + x2_i]+ALGEBRAIC[(200 * offset) + x3_i]+ALGEBRAIC[(200 * offset) + x4_i]);
+ALGEBRAIC[(200 * offset) + E4_i] = ALGEBRAIC[(200 * offset) + x4_i]/(ALGEBRAIC[(200 * offset) + x1_i]+ALGEBRAIC[(200 * offset) + x2_i]+ALGEBRAIC[(200 * offset) + x3_i]+ALGEBRAIC[(200 * offset) + x4_i]);
+ALGEBRAIC[(200 * offset) + JncxNa_i] = ( 3.00000*( ALGEBRAIC[(200 * offset) + E4_i]*ALGEBRAIC[(200 * offset) + k7_i] -  ALGEBRAIC[(200 * offset) + E1_i]*ALGEBRAIC[(200 * offset) + k8_i])+ ALGEBRAIC[(200 * offset) + E3_i]*ALGEBRAIC[(200 * offset) + k4pp_i]) -  ALGEBRAIC[(200 * offset) + E2_i]*ALGEBRAIC[(200 * offset) + k3pp_i];
+ALGEBRAIC[(200 * offset) + JncxCa_i] =  ALGEBRAIC[(200 * offset) + E2_i]*CONSTANTS[(206 * offset) + k2_i] -  ALGEBRAIC[(200 * offset) + E1_i]*CONSTANTS[(206 * offset) + k1_i];
+ALGEBRAIC[(200 * offset) + INaCa_i] =  0.800000*CONSTANTS[(206 * offset) + Gncx]*ALGEBRAIC[(200 * offset) + allo_i]*( CONSTANTS[(206 * offset) + zna]*ALGEBRAIC[(200 * offset) + JncxNa_i]+ CONSTANTS[(206 * offset) + zca]*ALGEBRAIC[(200 * offset) + JncxCa_i]);
+ALGEBRAIC[(200 * offset) + A_Nab] = ( CONSTANTS[(206 * offset) + PNab]*CONSTANTS[(206 * offset) + ffrt]*( STATES[(49 * offset) + nai]*exp(ALGEBRAIC[(200 * offset) + vfrt]) - CONSTANTS[(206 * offset) + nao]))/CONSTANTS[(206 * offset) + B_Nab];
+ALGEBRAIC[(200 * offset) + U_Nab] =  CONSTANTS[(206 * offset) + B_Nab]*(STATES[(49 * offset) + V] - CONSTANTS[(206 * offset) + v0_Nab]);
+ALGEBRAIC[(200 * offset) + INab] = (- 1.00000e-07<=ALGEBRAIC[(200 * offset) + U_Nab]&&ALGEBRAIC[(200 * offset) + U_Nab]<=1.00000e-07 ?  ALGEBRAIC[(200 * offset) + A_Nab]*(1.00000 -  0.500000*ALGEBRAIC[(200 * offset) + U_Nab]) : ( ALGEBRAIC[(200 * offset) + A_Nab]*ALGEBRAIC[(200 * offset) + U_Nab])/(exp(ALGEBRAIC[(200 * offset) + U_Nab]) - 1.00000));
+ALGEBRAIC[(200 * offset) + JdiffNa] = (STATES[(49 * offset) + nass] - STATES[(49 * offset) + nai])/2.00000;
+ALGEBRAIC[(200 * offset) + A_2] = ( 0.750000*CONSTANTS[(206 * offset) + ffrt]*( STATES[(49 * offset) + nass]*exp(ALGEBRAIC[(200 * offset) + vfrt]) - CONSTANTS[(206 * offset) + nao]))/CONSTANTS[(206 * offset) + B_2];
+ALGEBRAIC[(200 * offset) + U_2] =  CONSTANTS[(206 * offset) + B_2]*(STATES[(49 * offset) + V] - CONSTANTS[(206 * offset) + v0_CaL]);
+ALGEBRAIC[(200 * offset) + PhiCaNa] = (- 1.00000e-07<=ALGEBRAIC[(200 * offset) + U_2]&&ALGEBRAIC[(200 * offset) + U_2]<=1.00000e-07 ?  ALGEBRAIC[(200 * offset) + A_2]*(1.00000 -  0.500000*ALGEBRAIC[(200 * offset) + U_2]) : ( ALGEBRAIC[(200 * offset) + A_2]*ALGEBRAIC[(200 * offset) + U_2])/(exp(ALGEBRAIC[(200 * offset) + U_2]) - 1.00000));
+ALGEBRAIC[(200 * offset) + ICaNa] =  (1.00000 - ALGEBRAIC[(200 * offset) + fICaLp])*CONSTANTS[(206 * offset) + PCaNa]*ALGEBRAIC[(200 * offset) + PhiCaNa]*STATES[(49 * offset) + d]*( ALGEBRAIC[(200 * offset) + f]*(1.00000 - STATES[(49 * offset) + nca])+ STATES[(49 * offset) + jca]*ALGEBRAIC[(200 * offset) + fca]*STATES[(49 * offset) + nca])+ ALGEBRAIC[(200 * offset) + fICaLp]*CONSTANTS[(206 * offset) + PCaNap]*ALGEBRAIC[(200 * offset) + PhiCaNa]*STATES[(49 * offset) + d]*( ALGEBRAIC[(200 * offset) + fp]*(1.00000 - STATES[(49 * offset) + nca])+ STATES[(49 * offset) + jca]*ALGEBRAIC[(200 * offset) + fcap]*STATES[(49 * offset) + nca]);
+ALGEBRAIC[(200 * offset) + allo_ss] = 1.00000/(1.00000+pow(CONSTANTS[(206 * offset) + KmCaAct]/STATES[(49 * offset) + cass], 2.00000));
+ALGEBRAIC[(200 * offset) + h7_ss] = 1.00000+ (CONSTANTS[(206 * offset) + nao]/CONSTANTS[(206 * offset) + kna3])*(1.00000+1.00000/ALGEBRAIC[(200 * offset) + hna]);
+ALGEBRAIC[(200 * offset) + h8_ss] = CONSTANTS[(206 * offset) + nao]/( CONSTANTS[(206 * offset) + kna3]*ALGEBRAIC[(200 * offset) + hna]*ALGEBRAIC[(200 * offset) + h7_ss]);
+ALGEBRAIC[(200 * offset) + k3pp_ss] =  ALGEBRAIC[(200 * offset) + h8_ss]*CONSTANTS[(206 * offset) + wnaca];
+ALGEBRAIC[(200 * offset) + h1_ss] = 1.00000+ (STATES[(49 * offset) + nass]/CONSTANTS[(206 * offset) + kna3])*(1.00000+ALGEBRAIC[(200 * offset) + hna]);
+ALGEBRAIC[(200 * offset) + h2_ss] = ( STATES[(49 * offset) + nass]*ALGEBRAIC[(200 * offset) + hna])/( CONSTANTS[(206 * offset) + kna3]*ALGEBRAIC[(200 * offset) + h1_ss]);
+ALGEBRAIC[(200 * offset) + k4pp_ss] =  ALGEBRAIC[(200 * offset) + h2_ss]*CONSTANTS[(206 * offset) + wnaca];
+ALGEBRAIC[(200 * offset) + h4_ss] = 1.00000+ (STATES[(49 * offset) + nass]/CONSTANTS[(206 * offset) + kna1])*(1.00000+STATES[(49 * offset) + nass]/CONSTANTS[(206 * offset) + kna2]);
+ALGEBRAIC[(200 * offset) + h5_ss] = ( STATES[(49 * offset) + nass]*STATES[(49 * offset) + nass])/( ALGEBRAIC[(200 * offset) + h4_ss]*CONSTANTS[(206 * offset) + kna1]*CONSTANTS[(206 * offset) + kna2]);
+ALGEBRAIC[(200 * offset) + k7_ss] =  ALGEBRAIC[(200 * offset) + h5_ss]*ALGEBRAIC[(200 * offset) + h2_ss]*CONSTANTS[(206 * offset) + wna];
+ALGEBRAIC[(200 * offset) + k8_ss] =  ALGEBRAIC[(200 * offset) + h8_ss]*CONSTANTS[(206 * offset) + h11_ss]*CONSTANTS[(206 * offset) + wna];
+ALGEBRAIC[(200 * offset) + h9_ss] = 1.00000/ALGEBRAIC[(200 * offset) + h7_ss];
+ALGEBRAIC[(200 * offset) + k3p_ss] =  ALGEBRAIC[(200 * offset) + h9_ss]*CONSTANTS[(206 * offset) + wca];
+ALGEBRAIC[(200 * offset) + k3_ss] = ALGEBRAIC[(200 * offset) + k3p_ss]+ALGEBRAIC[(200 * offset) + k3pp_ss];
+ALGEBRAIC[(200 * offset) + h3_ss] = 1.00000/ALGEBRAIC[(200 * offset) + h1_ss];
+ALGEBRAIC[(200 * offset) + k4p_ss] = ( ALGEBRAIC[(200 * offset) + h3_ss]*CONSTANTS[(206 * offset) + wca])/ALGEBRAIC[(200 * offset) + hca];
+ALGEBRAIC[(200 * offset) + k4_ss] = ALGEBRAIC[(200 * offset) + k4p_ss]+ALGEBRAIC[(200 * offset) + k4pp_ss];
+ALGEBRAIC[(200 * offset) + h6_ss] = 1.00000/ALGEBRAIC[(200 * offset) + h4_ss];
+ALGEBRAIC[(200 * offset) + k6_ss] =  ALGEBRAIC[(200 * offset) + h6_ss]*STATES[(49 * offset) + cass]*CONSTANTS[(206 * offset) + kcaon];
+ALGEBRAIC[(200 * offset) + x1_ss] =  CONSTANTS[(206 * offset) + k2_ss]*ALGEBRAIC[(200 * offset) + k4_ss]*(ALGEBRAIC[(200 * offset) + k7_ss]+ALGEBRAIC[(200 * offset) + k6_ss])+ CONSTANTS[(206 * offset) + k5_ss]*ALGEBRAIC[(200 * offset) + k7_ss]*(CONSTANTS[(206 * offset) + k2_ss]+ALGEBRAIC[(200 * offset) + k3_ss]);
+ALGEBRAIC[(200 * offset) + x2_ss] =  CONSTANTS[(206 * offset) + k1_ss]*ALGEBRAIC[(200 * offset) + k7_ss]*(ALGEBRAIC[(200 * offset) + k4_ss]+CONSTANTS[(206 * offset) + k5_ss])+ ALGEBRAIC[(200 * offset) + k4_ss]*ALGEBRAIC[(200 * offset) + k6_ss]*(CONSTANTS[(206 * offset) + k1_ss]+ALGEBRAIC[(200 * offset) + k8_ss]);
+ALGEBRAIC[(200 * offset) + x3_ss] =  CONSTANTS[(206 * offset) + k1_ss]*ALGEBRAIC[(200 * offset) + k3_ss]*(ALGEBRAIC[(200 * offset) + k7_ss]+ALGEBRAIC[(200 * offset) + k6_ss])+ ALGEBRAIC[(200 * offset) + k8_ss]*ALGEBRAIC[(200 * offset) + k6_ss]*(CONSTANTS[(206 * offset) + k2_ss]+ALGEBRAIC[(200 * offset) + k3_ss]);
+ALGEBRAIC[(200 * offset) + x4_ss] =  CONSTANTS[(206 * offset) + k2_ss]*ALGEBRAIC[(200 * offset) + k8_ss]*(ALGEBRAIC[(200 * offset) + k4_ss]+CONSTANTS[(206 * offset) + k5_ss])+ ALGEBRAIC[(200 * offset) + k3_ss]*CONSTANTS[(206 * offset) + k5_ss]*(CONSTANTS[(206 * offset) + k1_ss]+ALGEBRAIC[(200 * offset) + k8_ss]);
+ALGEBRAIC[(200 * offset) + E1_ss] = ALGEBRAIC[(200 * offset) + x1_ss]/(ALGEBRAIC[(200 * offset) + x1_ss]+ALGEBRAIC[(200 * offset) + x2_ss]+ALGEBRAIC[(200 * offset) + x3_ss]+ALGEBRAIC[(200 * offset) + x4_ss]);
+ALGEBRAIC[(200 * offset) + E2_ss] = ALGEBRAIC[(200 * offset) + x2_ss]/(ALGEBRAIC[(200 * offset) + x1_ss]+ALGEBRAIC[(200 * offset) + x2_ss]+ALGEBRAIC[(200 * offset) + x3_ss]+ALGEBRAIC[(200 * offset) + x4_ss]);
+ALGEBRAIC[(200 * offset) + E3_ss] = ALGEBRAIC[(200 * offset) + x3_ss]/(ALGEBRAIC[(200 * offset) + x1_ss]+ALGEBRAIC[(200 * offset) + x2_ss]+ALGEBRAIC[(200 * offset) + x3_ss]+ALGEBRAIC[(200 * offset) + x4_ss]);
+ALGEBRAIC[(200 * offset) + E4_ss] = ALGEBRAIC[(200 * offset) + x4_ss]/(ALGEBRAIC[(200 * offset) + x1_ss]+ALGEBRAIC[(200 * offset) + x2_ss]+ALGEBRAIC[(200 * offset) + x3_ss]+ALGEBRAIC[(200 * offset) + x4_ss]);
+ALGEBRAIC[(200 * offset) + JncxNa_ss] = ( 3.00000*( ALGEBRAIC[(200 * offset) + E4_ss]*ALGEBRAIC[(200 * offset) + k7_ss] -  ALGEBRAIC[(200 * offset) + E1_ss]*ALGEBRAIC[(200 * offset) + k8_ss])+ ALGEBRAIC[(200 * offset) + E3_ss]*ALGEBRAIC[(200 * offset) + k4pp_ss]) -  ALGEBRAIC[(200 * offset) + E2_ss]*ALGEBRAIC[(200 * offset) + k3pp_ss];
+ALGEBRAIC[(200 * offset) + JncxCa_ss] =  ALGEBRAIC[(200 * offset) + E2_ss]*CONSTANTS[(206 * offset) + k2_ss] -  ALGEBRAIC[(200 * offset) + E1_ss]*CONSTANTS[(206 * offset) + k1_ss];
+ALGEBRAIC[(200 * offset) + INaCa_ss] =  0.200000*CONSTANTS[(206 * offset) + Gncx]*ALGEBRAIC[(200 * offset) + allo_ss]*( CONSTANTS[(206 * offset) + zna]*ALGEBRAIC[(200 * offset) + JncxNa_ss]+ CONSTANTS[(206 * offset) + zca]*ALGEBRAIC[(200 * offset) + JncxCa_ss]);
+ALGEBRAIC[(200 * offset) + IpCa] = ( CONSTANTS[(206 * offset) + GpCa]*STATES[(49 * offset) + cai])/(CONSTANTS[(206 * offset) + KmCap]+STATES[(49 * offset) + cai]);
+ALGEBRAIC[(200 * offset) + A_Cab] = ( CONSTANTS[(206 * offset) + PCab]*4.00000*CONSTANTS[(206 * offset) + ffrt]*( STATES[(49 * offset) + cai]*exp( 2.00000*ALGEBRAIC[(200 * offset) + vfrt]) -  0.341000*CONSTANTS[(206 * offset) + cao]))/CONSTANTS[(206 * offset) + B_Cab];
+ALGEBRAIC[(200 * offset) + U_Cab] =  CONSTANTS[(206 * offset) + B_Cab]*(STATES[(49 * offset) + V] - CONSTANTS[(206 * offset) + v0_Cab]);
+ALGEBRAIC[(200 * offset) + ICab] = (- 1.00000e-07<=ALGEBRAIC[(200 * offset) + U_Cab]&&ALGEBRAIC[(200 * offset) + U_Cab]<=1.00000e-07 ?  ALGEBRAIC[(200 * offset) + A_Cab]*(1.00000 -  0.500000*ALGEBRAIC[(200 * offset) + U_Cab]) : ( ALGEBRAIC[(200 * offset) + A_Cab]*ALGEBRAIC[(200 * offset) + U_Cab])/(exp(ALGEBRAIC[(200 * offset) + U_Cab]) - 1.00000));
+ALGEBRAIC[(200 * offset) + Jdiff] = (STATES[(49 * offset) + cass] - STATES[(49 * offset) + cai])/0.200000;
+ALGEBRAIC[(200 * offset) + fJrelp] = 1.00000/(1.00000+CONSTANTS[(206 * offset) + KmCaMK]/ALGEBRAIC[(200 * offset) + CaMKa]);
+ALGEBRAIC[(200 * offset) + Jrel] =  CONSTANTS[(206 * offset) + Jrel_scaling_factor]*( (1.00000 - ALGEBRAIC[(200 * offset) + fJrelp])*STATES[(49 * offset) + Jrelnp]+ ALGEBRAIC[(200 * offset) + fJrelp]*STATES[(49 * offset) + Jrelp]);
+ALGEBRAIC[(200 * offset) + Bcass] = 1.00000/(1.00000+( CONSTANTS[(206 * offset) + BSRmax]*CONSTANTS[(206 * offset) + KmBSR])/pow(CONSTANTS[(206 * offset) + KmBSR]+STATES[(49 * offset) + cass], 2.00000)+( CONSTANTS[(206 * offset) + BSLmax]*CONSTANTS[(206 * offset) + KmBSL])/pow(CONSTANTS[(206 * offset) + KmBSL]+STATES[(49 * offset) + cass], 2.00000));
+ALGEBRAIC[(200 * offset) + Jupnp] = ( CONSTANTS[(206 * offset) + upScale]*0.00437500*STATES[(49 * offset) + cai])/(STATES[(49 * offset) + cai]+0.000920000);
+ALGEBRAIC[(200 * offset) + Jupp] = ( CONSTANTS[(206 * offset) + upScale]*2.75000*0.00437500*STATES[(49 * offset) + cai])/((STATES[(49 * offset) + cai]+0.000920000) - 0.000170000);
+ALGEBRAIC[(200 * offset) + fJupp] = 1.00000/(1.00000+CONSTANTS[(206 * offset) + KmCaMK]/ALGEBRAIC[(200 * offset) + CaMKa]);
+ALGEBRAIC[(200 * offset) + Jleak] = ( 0.00393750*STATES[(49 * offset) + cansr])/15.0000;
+ALGEBRAIC[(200 * offset) + Jup] =  CONSTANTS[(206 * offset) + Jup_b]*(( (1.00000 - ALGEBRAIC[(200 * offset) + fJupp])*ALGEBRAIC[(200 * offset) + Jupnp]+ ALGEBRAIC[(200 * offset) + fJupp]*ALGEBRAIC[(200 * offset) + Jupp]) - ALGEBRAIC[(200 * offset) + Jleak]);
+ALGEBRAIC[(200 * offset) + Bcai] = 1.00000/(1.00000+( CONSTANTS[(206 * offset) + cmdnmax]*CONSTANTS[(206 * offset) + kmcmdn])/pow(CONSTANTS[(206 * offset) + kmcmdn]+STATES[(49 * offset) + cai], 2.00000)+( CONSTANTS[(206 * offset) + trpnmax]*CONSTANTS[(206 * offset) + kmtrpn])/pow(CONSTANTS[(206 * offset) + kmtrpn]+STATES[(49 * offset) + cai], 2.00000));
+ALGEBRAIC[(200 * offset) + Jtr] = (STATES[(49 * offset) + cansr] - STATES[(49 * offset) + cajsr])/100.000;
+ALGEBRAIC[(200 * offset) + Bcajsr] = 1.00000/(1.00000+( CONSTANTS[(206 * offset) + csqnmax]*CONSTANTS[(206 * offset) + kmcsqn])/pow(CONSTANTS[(206 * offset) + kmcsqn]+STATES[(49 * offset) + cajsr], 2.00000));
+
+//RATES[(49 * offset) + D] = CONSTANTS[(206 * offset) + cnc];
+RATES[(49 * offset) + D] = 0.;
+RATES[(49 * offset) + IC1] = (- ( CONSTANTS[(206 * offset) + A11]*exp( CONSTANTS[(206 * offset) + B11]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IC1]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q11]))/10.0000) -  CONSTANTS[(206 * offset) + A21]*exp( CONSTANTS[(206 * offset) + B21]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IC2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q21]))/10.0000))+ CONSTANTS[(206 * offset) + A51]*exp( CONSTANTS[(206 * offset) + B51]*STATES[(49 * offset) + V])*STATES[(49 * offset) + C1]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q51]))/10.0000)) -  CONSTANTS[(206 * offset) + A61]*exp( CONSTANTS[(206 * offset) + B61]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IC1]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q61]))/10.0000);
+RATES[(49 * offset) + IC2] = ((( CONSTANTS[(206 * offset) + A11]*exp( CONSTANTS[(206 * offset) + B11]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IC1]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q11]))/10.0000) -  CONSTANTS[(206 * offset) + A21]*exp( CONSTANTS[(206 * offset) + B21]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IC2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q21]))/10.0000)) - ( CONSTANTS[(206 * offset) + A3]*exp( CONSTANTS[(206 * offset) + B3]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IC2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q3]))/10.0000) -  CONSTANTS[(206 * offset) + A4]*exp( CONSTANTS[(206 * offset) + B4]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IO]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q4]))/10.0000)))+ CONSTANTS[(206 * offset) + A52]*exp( CONSTANTS[(206 * offset) + B52]*STATES[(49 * offset) + V])*STATES[(49 * offset) + C2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q52]))/10.0000)) -  CONSTANTS[(206 * offset) + A62]*exp( CONSTANTS[(206 * offset) + B62]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IC2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q62]))/10.0000);
+RATES[(49 * offset) + C1] = - ( CONSTANTS[(206 * offset) + A1]*exp( CONSTANTS[(206 * offset) + B1]*STATES[(49 * offset) + V])*STATES[(49 * offset) + C1]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q1]))/10.0000) -  CONSTANTS[(206 * offset) + A2]*exp( CONSTANTS[(206 * offset) + B2]*STATES[(49 * offset) + V])*STATES[(49 * offset) + C2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q2]))/10.0000)) - ( CONSTANTS[(206 * offset) + A51]*exp( CONSTANTS[(206 * offset) + B51]*STATES[(49 * offset) + V])*STATES[(49 * offset) + C1]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q51]))/10.0000) -  CONSTANTS[(206 * offset) + A61]*exp( CONSTANTS[(206 * offset) + B61]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IC1]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q61]))/10.0000));
+RATES[(49 * offset) + C2] = (( CONSTANTS[(206 * offset) + A1]*exp( CONSTANTS[(206 * offset) + B1]*STATES[(49 * offset) + V])*STATES[(49 * offset) + C1]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q1]))/10.0000) -  CONSTANTS[(206 * offset) + A2]*exp( CONSTANTS[(206 * offset) + B2]*STATES[(49 * offset) + V])*STATES[(49 * offset) + C2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q2]))/10.0000)) - ( CONSTANTS[(206 * offset) + A31]*exp( CONSTANTS[(206 * offset) + B31]*STATES[(49 * offset) + V])*STATES[(49 * offset) + C2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q31]))/10.0000) -  CONSTANTS[(206 * offset) + A41]*exp( CONSTANTS[(206 * offset) + B41]*STATES[(49 * offset) + V])*STATES[(49 * offset) + O]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q41]))/10.0000))) - ( CONSTANTS[(206 * offset) + A52]*exp( CONSTANTS[(206 * offset) + B52]*STATES[(49 * offset) + V])*STATES[(49 * offset) + C2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q52]))/10.0000) -  CONSTANTS[(206 * offset) + A62]*exp( CONSTANTS[(206 * offset) + B62]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IC2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q62]))/10.0000));
+RATES[(49 * offset) + O] = (( CONSTANTS[(206 * offset) + A31]*exp( CONSTANTS[(206 * offset) + B31]*STATES[(49 * offset) + V])*STATES[(49 * offset) + C2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q31]))/10.0000) -  CONSTANTS[(206 * offset) + A41]*exp( CONSTANTS[(206 * offset) + B41]*STATES[(49 * offset) + V])*STATES[(49 * offset) + O]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q41]))/10.0000)) - ( CONSTANTS[(206 * offset) + A53]*exp( CONSTANTS[(206 * offset) + B53]*STATES[(49 * offset) + V])*STATES[(49 * offset) + O]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q53]))/10.0000) -  CONSTANTS[(206 * offset) + A63]*exp( CONSTANTS[(206 * offset) + B63]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IO]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q63]))/10.0000))) - ( (( CONSTANTS[(206 * offset) + Kmax]*CONSTANTS[(206 * offset) + Ku]*pow( STATES[(49 * offset) + D],CONSTANTS[(206 * offset) + n]))/(pow( STATES[(49 * offset) + D],CONSTANTS[(206 * offset) + n])+CONSTANTS[(206 * offset) + halfmax]))*STATES[(49 * offset) + O] -  CONSTANTS[(206 * offset) + Ku]*STATES[(49 * offset) + Obound]);
+RATES[(49 * offset) + IO] = ((( CONSTANTS[(206 * offset) + A3]*exp( CONSTANTS[(206 * offset) + B3]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IC2]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q3]))/10.0000) -  CONSTANTS[(206 * offset) + A4]*exp( CONSTANTS[(206 * offset) + B4]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IO]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q4]))/10.0000))+ CONSTANTS[(206 * offset) + A53]*exp( CONSTANTS[(206 * offset) + B53]*STATES[(49 * offset) + V])*STATES[(49 * offset) + O]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q53]))/10.0000)) -  CONSTANTS[(206 * offset) + A63]*exp( CONSTANTS[(206 * offset) + B63]*STATES[(49 * offset) + V])*STATES[(49 * offset) + IO]*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q63]))/10.0000)) - ( (( CONSTANTS[(206 * offset) + Kmax]*CONSTANTS[(206 * offset) + Ku]*pow( STATES[(49 * offset) + D],CONSTANTS[(206 * offset) + n]))/(pow( STATES[(49 * offset) + D],CONSTANTS[(206 * offset) + n])+CONSTANTS[(206 * offset) + halfmax]))*STATES[(49 * offset) + IO] -  (( CONSTANTS[(206 * offset) + Ku]*CONSTANTS[(206 * offset) + A53]*exp( CONSTANTS[(206 * offset) + B53]*STATES[(49 * offset) + V])*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q53]))/10.0000))/( CONSTANTS[(206 * offset) + A63]*exp( CONSTANTS[(206 * offset) + B63]*STATES[(49 * offset) + V])*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q63]))/10.0000)))*STATES[(49 * offset) + IObound]);
+RATES[(49 * offset) + IObound] = (( (( CONSTANTS[(206 * offset) + Kmax]*CONSTANTS[(206 * offset) + Ku]*pow( STATES[(49 * offset) + D],CONSTANTS[(206 * offset) + n]))/(pow( STATES[(49 * offset) + D],CONSTANTS[(206 * offset) + n])+CONSTANTS[(206 * offset) + halfmax]))*STATES[(49 * offset) + IO] -  (( CONSTANTS[(206 * offset) + Ku]*CONSTANTS[(206 * offset) + A53]*exp( CONSTANTS[(206 * offset) + B53]*STATES[(49 * offset) + V])*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q53]))/10.0000))/( CONSTANTS[(206 * offset) + A63]*exp( CONSTANTS[(206 * offset) + B63]*STATES[(49 * offset) + V])*exp(( (CONSTANTS[(206 * offset) + Temp] - 20.0000)*log(CONSTANTS[(206 * offset) + q63]))/10.0000)))*STATES[(49 * offset) + IObound])+ (CONSTANTS[(206 * offset) + Kt]/(1.00000+exp(- (STATES[(49 * offset) + V] - CONSTANTS[(206 * offset) + Vhalf])/6.78900)))*STATES[(49 * offset) + Cbound]) -  CONSTANTS[(206 * offset) + Kt]*STATES[(49 * offset) + IObound];
+RATES[(49 * offset) + Obound] = (( (( CONSTANTS[(206 * offset) + Kmax]*CONSTANTS[(206 * offset) + Ku]*pow( STATES[(49 * offset) + D],CONSTANTS[(206 * offset) + n]))/(pow( STATES[(49 * offset) + D],CONSTANTS[(206 * offset) + n])+CONSTANTS[(206 * offset) + halfmax]))*STATES[(49 * offset) + O] -  CONSTANTS[(206 * offset) + Ku]*STATES[(49 * offset) + Obound])+ (CONSTANTS[(206 * offset) + Kt]/(1.00000+exp(- (STATES[(49 * offset) + V] - CONSTANTS[(206 * offset) + Vhalf])/6.78900)))*STATES[(49 * offset) + Cbound]) -  CONSTANTS[(206 * offset) + Kt]*STATES[(49 * offset) + Obound];
+RATES[(49 * offset) + Cbound] = - ( (CONSTANTS[(206 * offset) + Kt]/(1.00000+exp(- (STATES[(49 * offset) + V] - CONSTANTS[(206 * offset) + Vhalf])/6.78900)))*STATES[(49 * offset) + Cbound] -  CONSTANTS[(206 * offset) + Kt]*STATES[(49 * offset) + Obound]) - ( (CONSTANTS[(206 * offset) + Kt]/(1.00000+exp(- (STATES[(49 * offset) + V] - CONSTANTS[(206 * offset) + Vhalf])/6.78900)))*STATES[(49 * offset) + Cbound] -  CONSTANTS[(206 * offset) + Kt]*STATES[(49 * offset) + IObound]);
+RATES[(49 * offset) + hL] = (ALGEBRAIC[(200 * offset) + hLss] - STATES[(49 * offset) + hL])/CONSTANTS[(206 * offset) + thL];
+RATES[(49 * offset) + hLp] = (ALGEBRAIC[(200 * offset) + hLssp] - STATES[(49 * offset) + hLp])/CONSTANTS[(206 * offset) + thLp];
+RATES[(49 * offset) + m] = (ALGEBRAIC[(200 * offset) + mss] - STATES[(49 * offset) + m])/ALGEBRAIC[(200 * offset) + tm];
+RATES[(49 * offset) + hf] = (ALGEBRAIC[(200 * offset) + hss] - STATES[(49 * offset) + hf])/ALGEBRAIC[(200 * offset) + thf];
+RATES[(49 * offset) + hs] = (ALGEBRAIC[(200 * offset) + hss] - STATES[(49 * offset) + hs])/ALGEBRAIC[(200 * offset) + ths];
+RATES[(49 * offset) + a] = (ALGEBRAIC[(200 * offset) + ass] - STATES[(49 * offset) + a])/ALGEBRAIC[(200 * offset) + ta];
+RATES[(49 * offset) + d] = (ALGEBRAIC[(200 * offset) + dss] - STATES[(49 * offset) + d])/ALGEBRAIC[(200 * offset) + td];
+RATES[(49 * offset) + ff] = (ALGEBRAIC[(200 * offset) + fss] - STATES[(49 * offset) + ff])/ALGEBRAIC[(200 * offset) + tff];
+RATES[(49 * offset) + fs] = (ALGEBRAIC[(200 * offset) + fss] - STATES[(49 * offset) + fs])/ALGEBRAIC[(200 * offset) + tfs];
+RATES[(49 * offset) + jca] = (ALGEBRAIC[(200 * offset) + fcass] - STATES[(49 * offset) + jca])/CONSTANTS[(206 * offset) + tjca];
+RATES[(49 * offset) + nca] =  ALGEBRAIC[(200 * offset) + anca]*CONSTANTS[(206 * offset) + k2n] -  STATES[(49 * offset) + nca]*ALGEBRAIC[(200 * offset) + km2n];
+RATES[(49 * offset) + xs1] = (ALGEBRAIC[(200 * offset) + xs1ss] - STATES[(49 * offset) + xs1])/ALGEBRAIC[(200 * offset) + txs1];
+RATES[(49 * offset) + xk1] = (ALGEBRAIC[(200 * offset) + xk1ss] - STATES[(49 * offset) + xk1])/ALGEBRAIC[(200 * offset) + txk1];
+RATES[(49 * offset) + CaMKt] =  CONSTANTS[(206 * offset) + aCaMK]*ALGEBRAIC[(200 * offset) + CaMKb]*(ALGEBRAIC[(200 * offset) + CaMKb]+STATES[(49 * offset) + CaMKt]) -  CONSTANTS[(206 * offset) + bCaMK]*STATES[(49 * offset) + CaMKt];
+RATES[(49 * offset) + j] = (ALGEBRAIC[(200 * offset) + jss] - STATES[(49 * offset) + j])/ALGEBRAIC[(200 * offset) + tj];
+RATES[(49 * offset) + ap] = (ALGEBRAIC[(200 * offset) + assp] - STATES[(49 * offset) + ap])/ALGEBRAIC[(200 * offset) + ta];
+RATES[(49 * offset) + fcaf] = (ALGEBRAIC[(200 * offset) + fcass] - STATES[(49 * offset) + fcaf])/ALGEBRAIC[(200 * offset) + tfcaf];
+RATES[(49 * offset) + fcas] = (ALGEBRAIC[(200 * offset) + fcass] - STATES[(49 * offset) + fcas])/ALGEBRAIC[(200 * offset) + tfcas];
+RATES[(49 * offset) + ffp] = (ALGEBRAIC[(200 * offset) + fss] - STATES[(49 * offset) + ffp])/ALGEBRAIC[(200 * offset) + tffp];
+RATES[(49 * offset) + xs2] = (ALGEBRAIC[(200 * offset) + xs2ss] - STATES[(49 * offset) + xs2])/ALGEBRAIC[(200 * offset) + txs2];
+RATES[(49 * offset) + hsp] = (ALGEBRAIC[(200 * offset) + hssp] - STATES[(49 * offset) + hsp])/ALGEBRAIC[(200 * offset) + thsp];
+RATES[(49 * offset) + jp] = (ALGEBRAIC[(200 * offset) + jss] - STATES[(49 * offset) + jp])/ALGEBRAIC[(200 * offset) + tjp];
+RATES[(49 * offset) + mL] = (ALGEBRAIC[(200 * offset) + mLss] - STATES[(49 * offset) + mL])/ALGEBRAIC[(200 * offset) + tmL];
+RATES[(49 * offset) + fcafp] = (ALGEBRAIC[(200 * offset) + fcass] - STATES[(49 * offset) + fcafp])/ALGEBRAIC[(200 * offset) + tfcafp];
+RATES[(49 * offset) + iF] = (ALGEBRAIC[(200 * offset) + iss] - STATES[(49 * offset) + iF])/ALGEBRAIC[(200 * offset) + tiF];
+RATES[(49 * offset) + iS] = (ALGEBRAIC[(200 * offset) + iss] - STATES[(49 * offset) + iS])/ALGEBRAIC[(200 * offset) + tiS];
+RATES[(49 * offset) + iFp] = (ALGEBRAIC[(200 * offset) + iss] - STATES[(49 * offset) + iFp])/ALGEBRAIC[(200 * offset) + tiFp];
+RATES[(49 * offset) + iSp] = (ALGEBRAIC[(200 * offset) + iss] - STATES[(49 * offset) + iSp])/ALGEBRAIC[(200 * offset) + tiSp];
+RATES[(49 * offset) + Jrelnp] = (ALGEBRAIC[(200 * offset) + Jrel_inf] - STATES[(49 * offset) + Jrelnp])/ALGEBRAIC[(200 * offset) + tau_rel];
+RATES[(49 * offset) + Jrelp] = (ALGEBRAIC[(200 * offset) + Jrel_infp] - STATES[(49 * offset) + Jrelp])/ALGEBRAIC[(200 * offset) + tau_relp];
+RATES[(49 * offset) + ki] = ( - ((ALGEBRAIC[(200 * offset) + Ito]+ALGEBRAIC[(200 * offset) + IKr]+ALGEBRAIC[(200 * offset) + IKs]+ALGEBRAIC[(200 * offset) + IK1]+ALGEBRAIC[(200 * offset) + IKb]+ALGEBRAIC[(200 * offset) + Istim]) -  2.00000*ALGEBRAIC[(200 * offset) + INaK])*CONSTANTS[(206 * offset) + cm]*CONSTANTS[(206 * offset) + Acap])/( CONSTANTS[(206 * offset) + F]*CONSTANTS[(206 * offset) + vmyo])+( ALGEBRAIC[(200 * offset) + JdiffK]*CONSTANTS[(206 * offset) + vss])/CONSTANTS[(206 * offset) + vmyo];
+RATES[(49 * offset) + kss] = ( - ALGEBRAIC[(200 * offset) + ICaK]*CONSTANTS[(206 * offset) + cm]*CONSTANTS[(206 * offset) + Acap])/( CONSTANTS[(206 * offset) + F]*CONSTANTS[(206 * offset) + vss]) - ALGEBRAIC[(200 * offset) + JdiffK];
+RATES[(49 * offset) + nai] = ( - (ALGEBRAIC[(200 * offset) + INa]+ALGEBRAIC[(200 * offset) + INaL]+ 3.00000*ALGEBRAIC[(200 * offset) + INaCa_i]+ 3.00000*ALGEBRAIC[(200 * offset) + INaK]+ALGEBRAIC[(200 * offset) + INab])*CONSTANTS[(206 * offset) + Acap]*CONSTANTS[(206 * offset) + cm])/( CONSTANTS[(206 * offset) + F]*CONSTANTS[(206 * offset) + vmyo])+( ALGEBRAIC[(200 * offset) + JdiffNa]*CONSTANTS[(206 * offset) + vss])/CONSTANTS[(206 * offset) + vmyo];
+RATES[(49 * offset) + nass] = ( - (ALGEBRAIC[(200 * offset) + ICaNa]+ 3.00000*ALGEBRAIC[(200 * offset) + INaCa_ss])*CONSTANTS[(206 * offset) + cm]*CONSTANTS[(206 * offset) + Acap])/( CONSTANTS[(206 * offset) + F]*CONSTANTS[(206 * offset) + vss]) - ALGEBRAIC[(200 * offset) + JdiffNa];
+RATES[(49 * offset) + V] = - (ALGEBRAIC[(200 * offset) + INa]+ALGEBRAIC[(200 * offset) + INaL]+ALGEBRAIC[(200 * offset) + Ito]+ALGEBRAIC[(200 * offset) + ICaL]+ALGEBRAIC[(200 * offset) + ICaNa]+ALGEBRAIC[(200 * offset) + ICaK]+ALGEBRAIC[(200 * offset) + IKr]+ALGEBRAIC[(200 * offset) + IKs]+ALGEBRAIC[(200 * offset) + IK1]+ALGEBRAIC[(200 * offset) + INaCa_i]+ALGEBRAIC[(200 * offset) + INaCa_ss]+ALGEBRAIC[(200 * offset) + INaK]+ALGEBRAIC[(200 * offset) + INab]+ALGEBRAIC[(200 * offset) + IKb]+ALGEBRAIC[(200 * offset) + IpCa]+ALGEBRAIC[(200 * offset) + ICab]+ALGEBRAIC[(200 * offset) + Istim]);
+RATES[(49 * offset) + cass] =  ALGEBRAIC[(200 * offset) + Bcass]*((( - (ALGEBRAIC[(200 * offset) + ICaL] -  2.00000*ALGEBRAIC[(200 * offset) + INaCa_ss])*CONSTANTS[(206 * offset) + cm]*CONSTANTS[(206 * offset) + Acap])/( 2.00000*CONSTANTS[(206 * offset) + F]*CONSTANTS[(206 * offset) + vss])+( ALGEBRAIC[(200 * offset) + Jrel]*CONSTANTS[(206 * offset) + vjsr])/CONSTANTS[(206 * offset) + vss]) - ALGEBRAIC[(200 * offset) + Jdiff]);
+RATES[(49 * offset) + cai] =  ALGEBRAIC[(200 * offset) + Bcai]*((( - ((ALGEBRAIC[(200 * offset) + IpCa]+ALGEBRAIC[(200 * offset) + ICab]) -  2.00000*ALGEBRAIC[(200 * offset) + INaCa_i])*CONSTANTS[(206 * offset) + cm]*CONSTANTS[(206 * offset) + Acap])/( 2.00000*CONSTANTS[(206 * offset) + F]*CONSTANTS[(206 * offset) + vmyo]) - ( ALGEBRAIC[(200 * offset) + Jup]*CONSTANTS[(206 * offset) + vnsr])/CONSTANTS[(206 * offset) + vmyo])+( ALGEBRAIC[(200 * offset) + Jdiff]*CONSTANTS[(206 * offset) + vss])/CONSTANTS[(206 * offset) + vmyo]);
+RATES[(49 * offset) + cansr] = ALGEBRAIC[(200 * offset) + Jup] - ( ALGEBRAIC[(200 * offset) + Jtr]*CONSTANTS[(206 * offset) + vjsr])/CONSTANTS[(206 * offset) + vnsr];
+RATES[(49 * offset) + cajsr] =  ALGEBRAIC[(200 * offset) + Bcajsr]*(ALGEBRAIC[(200 * offset) + Jtr] - ALGEBRAIC[(200 * offset) + Jrel]);
+}
+
+
+__device__ void solveAnalytical(double *CONSTANTS, double *STATES, double *ALGEBRAIC, double *RATES, double dt, int offset)
+{
+
 }
 
 __device__ void solveEuler( double *STATES, double *RATES, double dt, int offset)
@@ -1101,263 +1114,29 @@ __device__ void solveEuler( double *STATES, double *RATES, double dt, int offset
     }
 }
 
-
-__device__ void solveAnalytical(double *CONSTANTS, double *STATES, double *ALGEBRAIC, double *RATES, double dt, int offset)
-{
-    short algebraic_size = 200;
-    short constant_size = 206;
-    short states_size = 49;
-    short rates_size = 49;
-    ////==============
-    ////Exact solution
-    ////==============
-    ////INa
-  STATES[(states_size * offset) + m] = ALGEBRAIC[(algebraic_size * offset) + mss] - (ALGEBRAIC[(algebraic_size * offset) + mss] - STATES[(states_size * offset) + m]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tm]);
-  STATES[(states_size * offset) + hf] = ALGEBRAIC[(algebraic_size * offset) + hss] - (ALGEBRAIC[(algebraic_size * offset) + hss] - STATES[(states_size * offset) + hf]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + thf]);
-  STATES[(states_size * offset) + hs] = ALGEBRAIC[(algebraic_size * offset) + hss] - (ALGEBRAIC[(algebraic_size * offset) + hss] - STATES[(states_size * offset) + hs]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + ths]);
-  STATES[(states_size * offset) + j] = ALGEBRAIC[(algebraic_size * offset) + jss] - (ALGEBRAIC[(algebraic_size * offset) + jss] - STATES[(states_size * offset) + j]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tj]);
-  STATES[(states_size * offset) + hsp] = ALGEBRAIC[(algebraic_size * offset) + hssp] - (ALGEBRAIC[(algebraic_size * offset) + hssp] - STATES[(states_size * offset) + hsp]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + thsp]);
-  STATES[(states_size * offset) + jp] = ALGEBRAIC[(algebraic_size * offset) + jss] - (ALGEBRAIC[(algebraic_size * offset) + jss] - STATES[(states_size * offset) + jp]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tjp]);
-  STATES[(states_size * offset) + mL] = ALGEBRAIC[(algebraic_size * offset) + mLss] - (ALGEBRAIC[(algebraic_size * offset) + mLss] - STATES[(states_size * offset) + mL]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tmL]);
-  STATES[(states_size * offset) + hL] = ALGEBRAIC[(algebraic_size * offset) + hLss] - (ALGEBRAIC[(algebraic_size * offset) + hLss] - STATES[(states_size * offset) + hL]) * exp(-dt / CONSTANTS[(constant_size * offset) +  thL]);
-  STATES[(states_size * offset) + hLp] = ALGEBRAIC[(algebraic_size * offset) + hLssp] - (ALGEBRAIC[(algebraic_size * offset) + hLssp] - STATES[(states_size * offset) + hLp]) * exp(-dt / CONSTANTS[(constant_size * offset) +  thLp]);
-////Ito
-  STATES[(states_size * offset) + a] = ALGEBRAIC[(algebraic_size * offset) + ass] - (ALGEBRAIC[(algebraic_size * offset) + ass] - STATES[(states_size * offset) + a]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + ta]);
-  STATES[(states_size * offset) + iF] = ALGEBRAIC[(algebraic_size * offset) + iss] - (ALGEBRAIC[(algebraic_size * offset) + iss] - STATES[(states_size * offset) + iF]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tiF]);
-  STATES[(states_size * offset) + iS] = ALGEBRAIC[(algebraic_size * offset) + iss] - (ALGEBRAIC[(algebraic_size * offset) + iss] - STATES[(states_size * offset) + iS]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tiS]);
-  STATES[(states_size * offset) + ap] = ALGEBRAIC[(algebraic_size * offset) + assp] - (ALGEBRAIC[(algebraic_size * offset) + assp] - STATES[(states_size * offset) + ap]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + ta]);
-  STATES[(states_size * offset) + iFp] = ALGEBRAIC[(algebraic_size * offset) + iss] - (ALGEBRAIC[(algebraic_size * offset) + iss] - STATES[(states_size * offset) + iFp]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tiFp]);
-  STATES[(states_size * offset) + iSp] = ALGEBRAIC[(algebraic_size * offset) + iss] - (ALGEBRAIC[(algebraic_size * offset) + iss] - STATES[(states_size * offset) + iSp]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tiSp]);
-////ICaL
-  STATES[(states_size * offset) + d] = ALGEBRAIC[(algebraic_size * offset) + dss] - (ALGEBRAIC[(algebraic_size * offset) + dss] - STATES[(states_size * offset) + d]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + td]);
-  STATES[(states_size * offset) + ff] = ALGEBRAIC[(algebraic_size * offset) + fss] - (ALGEBRAIC[(algebraic_size * offset) + fss] - STATES[(states_size * offset) + ff]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tff]);
-  STATES[(states_size * offset) + fs] = ALGEBRAIC[(algebraic_size * offset) + fss] - (ALGEBRAIC[(algebraic_size * offset) + fss] - STATES[(states_size * offset) + fs]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tfs]);
-  STATES[(states_size * offset) + fcaf] = ALGEBRAIC[(algebraic_size * offset) + fcass] - (ALGEBRAIC[(algebraic_size * offset) + fcass] - STATES[(states_size * offset) + fcaf]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tfcaf]);
-  STATES[(states_size * offset) + fcas] = ALGEBRAIC[(algebraic_size * offset) + fcass] - (ALGEBRAIC[(algebraic_size * offset) + fcass] - STATES[(states_size * offset) + fcas]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tfcas]);
-  STATES[(states_size * offset) + jca] = ALGEBRAIC[(algebraic_size * offset) + fcass] - (ALGEBRAIC[(algebraic_size * offset) + fcass] - STATES[(states_size * offset) + jca]) * exp(- dt / CONSTANTS[(constant_size * offset) +  tjca]);
-  STATES[(states_size * offset) + ffp] = ALGEBRAIC[(algebraic_size * offset) + fss] - (ALGEBRAIC[(algebraic_size * offset) + fss] - STATES[(states_size * offset) + ffp]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tffp]);
-  STATES[(states_size * offset) + fcafp] = ALGEBRAIC[(algebraic_size * offset) + fcass] - (ALGEBRAIC[(algebraic_size * offset) + fcass] - STATES[(states_size * offset) + fcafp]) * exp(-d / ALGEBRAIC[(algebraic_size * offset) + tfcafp]);
-  STATES[(states_size * offset) + nca] = ALGEBRAIC[(algebraic_size * offset) + anca] * CONSTANTS[(constant_size * offset) +  k2n] / ALGEBRAIC[(algebraic_size * offset) + km2n] -
-      (ALGEBRAIC[(algebraic_size * offset) + anca] * CONSTANTS[(constant_size * offset) +  k2n] / ALGEBRAIC[(algebraic_size * offset) + km2n] - STATES[(states_size * offset) + nca]) * exp(-ALGEBRAIC[(algebraic_size * offset) + km2n] * dt);
-////IKs
-  STATES[(states_size * offset) + xs1] = ALGEBRAIC[(algebraic_size * offset) + xs1ss] - (ALGEBRAIC[(algebraic_size * offset) + xs1ss] - STATES[(states_size * offset) + xs1]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + txs1]);
-  STATES[(states_size * offset) + xs2] = ALGEBRAIC[(algebraic_size * offset) + xs2ss] - (ALGEBRAIC[(algebraic_size * offset) + xs2ss] - STATES[(states_size * offset) + xs2]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + txs2]);
-////IK1
-  STATES[(states_size * offset) + xk1] = ALGEBRAIC[(algebraic_size * offset) + xk1ss] - (ALGEBRAIC[(algebraic_size * offset) + xk1ss] - STATES[(states_size * offset) + xk1]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + txk1]);
-////RyR receptors
-  STATES[(states_size * offset) + Jrelnp] = ALGEBRAIC[(algebraic_size * offset) + Jrel_inf] - (ALGEBRAIC[(algebraic_size * offset) + Jrel_inf] - STATES[(states_size * offset) + Jrelnp]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tau_rel]);
-  STATES[(states_size * offset) + Jrelp] = ALGEBRAIC[(algebraic_size * offset) + Jrel_infp] - (ALGEBRAIC[(algebraic_size * offset) + Jrel_infp] - STATES[(states_size * offset) + Jrelp]) * exp(-dt / ALGEBRAIC[(algebraic_size * offset) + tau_relp]);
-////=============================
-////Approximated solution (Backward Euler)
-////=============================
-////IKr
-  double* coeffs = new double[31];
-  coeffs[0] = - CONSTANTS[(constant_size * offset) +  A11]*exp( CONSTANTS[(constant_size * offset) +  B11]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q11]))/10.0000) - CONSTANTS[(constant_size * offset) +  A61]*exp( CONSTANTS[(constant_size * offset) +  B61]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q61]))/10.0000);
-  coeffs[1] = CONSTANTS[(constant_size * offset) +  A21]*exp( CONSTANTS[(constant_size * offset) +  B21]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q21]))/10.0000);
-  coeffs[2] = CONSTANTS[(constant_size * offset) +  A51]*exp( CONSTANTS[(constant_size * offset) +  B51]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q51]))/10.0000);
-
-  coeffs[3] = CONSTANTS[(constant_size * offset) +  A11]*exp( CONSTANTS[(constant_size * offset) +  B11]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q11]))/10.0000);
-  coeffs[4] = - CONSTANTS[(constant_size * offset) +  A21]*exp( CONSTANTS[(constant_size * offset) +  B21]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q21]))/10.0000) - CONSTANTS[(constant_size * offset) +  A3]*exp( CONSTANTS[(constant_size * offset) +  B3]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q3]))/10.0000) - CONSTANTS[(constant_size * offset) +  A62]*exp( CONSTANTS[(constant_size * offset) +  B62]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q62]))/10.0000);
-  coeffs[5] = CONSTANTS[(constant_size * offset) +  A52]*exp( CONSTANTS[(constant_size * offset) +  B52]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q52]))/10.0000);
-  coeffs[6] = CONSTANTS[(constant_size * offset) +  A4]*exp( CONSTANTS[(constant_size * offset) +  B4]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q4]))/10.0000);
-
-  coeffs[7] = CONSTANTS[(constant_size * offset) +  A61]*exp( CONSTANTS[(constant_size * offset) +  B61]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q61]))/10.0000);
-  coeffs[8] = - CONSTANTS[(constant_size * offset) +  A1]*exp( CONSTANTS[(constant_size * offset) +  B1]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q1]))/10.0000) - CONSTANTS[(constant_size * offset) +  A51]*exp( CONSTANTS[(constant_size * offset) +  B51]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q51]))/10.0000);
-  coeffs[9] = CONSTANTS[(constant_size * offset) +  A2]*exp( CONSTANTS[(constant_size * offset) +  B2]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q2]))/10.0000);
-
-  coeffs[10] = CONSTANTS[(constant_size * offset) +  A62]*exp( CONSTANTS[(constant_size * offset) +  B62]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q62]))/10.0000);
-  coeffs[11] = CONSTANTS[(constant_size * offset) +  A1]*exp( CONSTANTS[(constant_size * offset) +  B1]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q1]))/10.0000);
-  coeffs[12] = - CONSTANTS[(constant_size * offset) +  A2]*exp( CONSTANTS[(constant_size * offset) +  B2]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q2]))/10.0000) - CONSTANTS[(constant_size * offset) +  A31]*exp( CONSTANTS[(constant_size * offset) +  B31]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q31]))/10.0000) - CONSTANTS[(constant_size * offset) +  A52]*exp( CONSTANTS[(constant_size * offset) +  B52]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q52]))/10.0000);
-  coeffs[13] = CONSTANTS[(constant_size * offset) +  A41]*exp( CONSTANTS[(constant_size * offset) +  B41]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q41]))/10.0000);
-
-  coeffs[14] = CONSTANTS[(constant_size * offset) +  A31]*exp( CONSTANTS[(constant_size * offset) +  B31]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q31]))/10.0000);
-  coeffs[15] = - CONSTANTS[(constant_size * offset) +  A41]*exp( CONSTANTS[(constant_size * offset) +  B41]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q41]))/10.0000) - CONSTANTS[(constant_size * offset) +  A53]*exp( CONSTANTS[(constant_size * offset) +  B53]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q53]))/10.0000) - (( CONSTANTS[(constant_size * offset) +  Kmax]*CONSTANTS[(constant_size * offset) +  Ku]*pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n]))/(pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n])+CONSTANTS[(constant_size * offset) +  halfmax]));
-  coeffs[16] = CONSTANTS[(constant_size * offset) +  A63]*exp( CONSTANTS[(constant_size * offset) +  B63]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q63]))/10.0000);
-  coeffs[17] = CONSTANTS[(constant_size * offset) +  Kt];
-
-  coeffs[18] = CONSTANTS[(constant_size * offset) +  A3]*exp( CONSTANTS[(constant_size * offset) +  B3]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q3]))/10.0000);
-  coeffs[19] = CONSTANTS[(constant_size * offset) +  A53]*exp( CONSTANTS[(constant_size * offset) +  B53]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q53]))/10.0000);
-  coeffs[20] = - CONSTANTS[(constant_size * offset) +  A4]*exp( CONSTANTS[(constant_size * offset) +  B4]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q4]))/10.0000) - CONSTANTS[(constant_size * offset) +  A63]*exp( CONSTANTS[(constant_size * offset) +  B63]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q63]))/10.0000) - (( CONSTANTS[(constant_size * offset) +  Kmax]*CONSTANTS[(constant_size * offset) +  Ku]*pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n]))/(pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n])+CONSTANTS[(constant_size * offset) +  halfmax]));
-  coeffs[21] = (( CONSTANTS[(constant_size * offset) +  Ku]*CONSTANTS[(constant_size * offset) +  A53]*exp( CONSTANTS[(constant_size * offset) +  B53]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q53]))/10.0000))/( CONSTANTS[(constant_size * offset) +  A63]*exp( CONSTANTS[(constant_size * offset) +  B63]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q63]))/10.0000)));
-
-  coeffs[22] = (( CONSTANTS[(constant_size * offset) +  Kmax]*CONSTANTS[(constant_size * offset) +  Ku]*pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n]))/(pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n])+CONSTANTS[(constant_size * offset) +  halfmax]));
-  coeffs[23] = -  CONSTANTS[(constant_size * offset) +  Ku] - CONSTANTS[(constant_size * offset) +  Kt];
-  coeffs[24] = (CONSTANTS[(constant_size * offset) +  Kt]/(1.00000+exp(- (STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) +  Vhalf])/6.78900)));
-
-  coeffs[25] = (( CONSTANTS[(constant_size * offset) +  Kmax]*CONSTANTS[(constant_size * offset) +  Ku]*pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n]))/(pow( STATES[(states_size * offset) + D],CONSTANTS[(constant_size * offset) +  n])+CONSTANTS[(constant_size * offset) +  halfmax]));
-  coeffs[26] = - (( CONSTANTS[(constant_size * offset) +  Ku]*CONSTANTS[(constant_size * offset) +  A53]*exp( CONSTANTS[(constant_size * offset) +  B53]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q53]))/10.0000))/( CONSTANTS[(constant_size * offset) +  A63]*exp( CONSTANTS[(constant_size * offset) +  B63]*STATES[(states_size * offset) + V])*exp(( (CONSTANTS[(constant_size * offset) +  Temp] - 20.0000)*log(CONSTANTS[(constant_size * offset) +  q63]))/10.0000))) - CONSTANTS[(constant_size * offset) +  Kt];
-  coeffs[27] = (CONSTANTS[(constant_size * offset) +  Kt]/(1.00000+exp(- (STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) +  Vhalf])/6.78900)));
-
-  coeffs[28] = CONSTANTS[(constant_size * offset) +  Kt];
-  coeffs[29] = CONSTANTS[(constant_size * offset) +  Kt];
-  coeffs[30] = - (CONSTANTS[(constant_size * offset) +  Kt]/(1.00000+exp(- (STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) +  Vhalf])/6.78900))) - (CONSTANTS[(constant_size * offset) +  Kt]/(1.00000+exp(- (STATES[(states_size * offset) + V] - CONSTANTS[(constant_size * offset) +  Vhalf])/6.78900)));
-  int m = 9;
-  double* a = new double[m*m]; // Flattened a
-  a[0 * m + 0] = 1.0 - dt * coeffs[0];   a[0 * m + 1] = - dt * coeffs[1];     a[0 * m + 2] = - dt * coeffs[2];     a[0 * m + 3] = 0.0;                      a[0 * m + 4] = 0.0;                      a[0 * m + 5] = 0.0;                      a[0 * m + 6] = 0.0;                      a[0 * m + 7] = 0.0;                      a[0 * m + 8] = 0.0;
-  a[1 * m + 0] = - dt * coeffs[3];       a[1 * m + 1] = 1.0 - dt * coeffs[4]; a[1 * m + 2] = 0.0;                  a[1 * m + 3] = - dt * coeffs[5];         a[1 * m + 4] = 0.0;                      a[1 * m + 5] = - dt * coeffs[6];         a[1 * m + 6] = 0.0;                      a[1 * m + 7] = 0.0;                      a[1 * m + 8] = 0.0;
-  a[2 * m + 0] = - dt * coeffs[7];       a[2 * m + 1] = 0.0;                  a[2 * m + 2] = 1.0 - dt * coeffs[8]; a[2 * m + 3] = - dt * coeffs[9];         a[2 * m + 4] = 0.0;                      a[2 * m + 5] = 0.0;                      a[2 * m + 6] = 0.0;                      a[2 * m + 7] = 0.0;                      a[2 * m + 8] = 0.0;
-  a[3 * m + 0] = 0.0;                    a[3 * m + 1] = - dt * coeffs[10];    a[3 * m + 2] = - dt * coeffs[11];    a[3 * m + 3] = 1.0 - dt * coeffs[12];    a[3 * m + 4] = - dt * coeffs[13];        a[3 * m + 5] = 0.0;                      a[3 * m + 6] = 0.0;                      a[3 * m + 7] = 0.0;                      a[3 * m + 8] = 0.0;
-  a[4 * m + 0] = 0.0;                    a[4 * m + 1] = 0.0;                  a[4 * m + 2] = 0.0;                  a[4 * m + 3] = - dt * coeffs[14];        a[4 * m + 4] = 1.0 - dt * coeffs[15];    a[4 * m + 5] = - dt * coeffs[16];        a[4 * m + 6] = - dt * coeffs[17];        a[4 * m + 7] = 0.0;                      a[4 * m + 8] = 0.0;
-  a[5 * m + 0] = 0.0;                    a[5 * m + 1] = - dt * coeffs[18];    a[5 * m + 2] = 0.0;                  a[5 * m + 3] = 0.0;                      a[5 * m + 4] = - dt * coeffs[19];        a[5 * m + 5] = 1.0 - dt * coeffs[20];    a[5 * m + 6] = - dt * coeffs[21];        a[5 * m + 7] = 0.0;                      a[5 * m + 8] = 0.0;
-  a[6 * m + 0] = 0.0;                    a[6 * m + 1] = 0.0;                  a[6 * m + 2] = 0.0;                  a[6 * m + 3] = 0.0;                      a[6 * m + 4] = - dt * coeffs[22];        a[6 * m + 5] = 0.0;                      a[6 * m + 6] = 1.0 - dt * coeffs[23];    a[6 * m + 7] = 0.0;                      a[6 * m + 8] = - dt * coeffs[24];
-  a[7 * m + 0] = 0.0;                    a[7 * m + 1] = 0.0;                  a[7 * m + 2] = 0.0;                  a[7 * m + 3] = 0.0;                      a[7 * m + 4] = 0.0;                      a[7 * m + 5] = - dt * coeffs[25];        a[7 * m + 6] = 0.0;                      a[7 * m + 7] = 1.0 - dt * coeffs[26];    a[7 * m + 8] = - dt * coeffs[27];
-  a[8 * m + 0] = 0.0;                    a[8 * m + 1] = 0.0;                  a[8 * m + 2] = 0.0;                  a[8 * m + 3] = 0.0;                      a[8 * m + 4] = 0.0;                      a[8 * m + 5] = 0.0;                      a[8 * m + 6] = - dt * coeffs[28];        a[8 * m + 7] = - dt * coeffs[29];        a[8 * m + 8] = 1.0 - dt * coeffs[30];
-  double* b = new double[m];
-  b[0] = STATES[(states_size * offset) + IC1];
-  b[1] = STATES[(states_size * offset) + IC2];
-  b[2] = STATES[(states_size * offset) + C1];
-  b[3] = STATES[(states_size * offset) + C2];
-  b[4] = STATES[(states_size * offset) + O];
-  b[5] = STATES[(states_size * offset) + IO];
-  b[6] = STATES[(states_size * offset) + Obound];
-  b[7] = STATES[(states_size * offset) + IObound];
-  b[8] = STATES[(states_size * offset) + Cbound];
-  double* x = new double[m];
-  for(int i = 0; i < m; i++){
-    x[i] = 0.0;
-  }
-  ___gaussElimination(a,b,x,m,offset); // gpu capable?
-  STATES[(states_size * offset) + IC1] = x[0];
-  STATES[(states_size * offset) + IC2] = x[1];
-  STATES[(states_size * offset) + C1] = x[2];
-  STATES[(states_size * offset) + C2] = x[3];
-  STATES[(states_size * offset) + O] = x[4];
-  STATES[(states_size * offset) + IO] = x[5];
-  STATES[(states_size * offset) + Obound] = x[6];
-  STATES[(states_size * offset) + IObound] = x[7];
-  STATES[(states_size * offset) + Cbound] = x[8];
-  delete[] coeffs;
-  delete[] a;
-  delete[] b;
-  delete[] x;
-//  STATES[IC1] = STATES[IC1] + RATES[IC1] * dt;
-//  STATES[IC2] = STATES[IC2] + RATES[IC2] * dt;
-//  STATES[C1] = STATES[C1] + RATES[C1] * dt;
-//  STATES[C2] = STATES[C2] + RATES[C2] * dt;
-//  STATES[O] = STATES[O] + RATES[O] * dt;
-//  STATES[IO] = STATES[IO] + RATES[IO] * dt;
-//  STATES[D] = STATES[D] + RATES[D] * dt;
-//  STATES[IObound] = STATES[IObound] + RATES[IObound] * dt;
-//  STATES[Obound] = STATES[Obound] + RATES[Obound] * dt;
-//  STATES[Cbound] = STATES[Cbound] + RATES[Cbound] * dt;
-////=============================
-////Approximated solution (Forward Euler)
-////=============================
-////CaMK
-  STATES[(states_size * offset) + CaMKt] = STATES[(states_size * offset) + CaMKt] + RATES[(rates_size * offset) + CaMKt] * dt;
-////Membrane potential
-  STATES[(states_size * offset) + V] = STATES[(states_size * offset) + V] + RATES[(rates_size * offset) + V] * dt;
-////Ion Concentrations and Buffers
-  STATES[(states_size * offset) + nai] = STATES[(states_size * offset) + nai] + RATES[(rates_size * offset) + nai] * dt;
-  STATES[(states_size * offset) + nass] = STATES[(states_size * offset) + nass] + RATES[(rates_size * offset) + nass] * dt;
-  STATES[(states_size * offset) + ki] = STATES[(states_size * offset) + ki] + RATES[(rates_size * offset) + ki] * dt;
-  STATES[(states_size * offset) + kss] = STATES[(states_size * offset) + kss] + RATES[(rates_size * offset) + kss] * dt;
-  STATES[(states_size * offset) + cai] = STATES[(states_size * offset) + cai] + RATES[(rates_size * offset) + cai] * dt;
-  STATES[(states_size * offset) + cass] = STATES[(states_size * offset) + cass] + RATES[(rates_size * offset) + cass] * dt;
-  STATES[(states_size * offset) + cansr] = STATES[(states_size * offset) + cansr] + RATES[(rates_size * offset) + cansr] * dt;
-  STATES[(states_size * offset) + cajsr] = STATES[(states_size * offset) + cajsr] + RATES[(rates_size * offset) + cajsr] * dt;
-//for(int i=0;i<states_size;i++){
-//    STATES[i] = STATES[i] + RATES[i] * dt;
-//}
-}
-
-__device__ void ___gaussElimination(double *A, double *b, double *x, int N, int offset) { 
-        // Using A as a flat array to represent an N x N matrix
-        
-        // we need to add offset because *A is actually Jc, *b is actually F, *x is actually delta
-        int jc_offset = 49 * 49 * offset;
-
-    for (int i = 0; i < N; i++) {
-        // Search for maximum in this column
-        double maxEl = fabs(A[i*N + i + jc_offset]);
-        int maxRow = i;
-        for (int k = i + 1; k < N; k++) {
-            if (fabs(A[k*N + i + jc_offset]) > maxEl) {
-                maxEl = fabs(A[k*N + i + jc_offset]);
-                maxRow = k;
-            }
-        }
-
-        // Swap maximum row with current row (column by column)
-        for (int k = i; k < N; k++) {
-            double tmp = A[maxRow*N + k + jc_offset];
-            A[maxRow*N + k + jc_offset] = A[i*N + k + jc_offset];
-            A[i*N + k + jc_offset] = tmp;
-        }
-        double tmp = b[(49*offset) + maxRow];
-        b[(49*offset) + maxRow] = b[(49*offset) + i];
-        b[(49*offset) + i] = tmp;
-
-        // Make all rows below this one 0 in current column
-        for (int k = i + 1; k < N; k++) {
-            double c = -A[k*N + i + jc_offset] / A[i*N + i + jc_offset];
-            for (int j = i; j < N; j++) {
-                if (i == j) {
-                    A[k*N + j + jc_offset] = 0;
-                } else {
-                    A[k*N + j + jc_offset] += c * A[i*N + j + jc_offset];
-                }
-            }
-            b[(49*offset) + k] += c * b[(49*offset) + i];
-        }
-    }
-
-    // Solve equation Ax=b for an upper triangular matrix A
-    for (int i = N - 1; i >= 0; i--) {
-        x[(49*offset) + i] = b[(49*offset) + i] / A[i*N + i + jc_offset];
-        for (int k = i - 1; k >= 0; k--) {
-            b[(49*offset) + k] -= A[k*N + i + jc_offset] * x[(49*offset) + i];
-        }
-    }
-}
-
-// void ohara_rudy_cipa_v1_2017::solveRK4(double TIME, double dt)
-// {
-// 	unsigned short idx;
-// 	double k1[49],k2[49],k3[49],k4[49];
-// 	double states_temp[49];
-	
-// 	computeRates(TIME, CONSTANTS, RATES, STATES, ALGEBRAIC );
-// 	for(idx = 0; idx < states_size; idx++){
-// 		k1[idx] = dt * RATES[idx];
-// 		states_temp[idx] = STATES[idx] + k1[idx]*0.5;
-// 	}
-// 	computeRates(TIME+(dt*0.5), CONSTANTS, RATES, states_temp, ALGEBRAIC );
-// 	for(idx = 0; idx < states_size; idx++){
-// 		k2[idx] = dt * RATES[idx];
-// 		states_temp[idx] = STATES[idx] + k2[idx]*0.5;
-// 	}
-// 	computeRates(TIME+(dt*0.5), CONSTANTS, RATES, states_temp, ALGEBRAIC );
-// 	for(idx = 0; idx < states_size; idx++){
-// 		k3[idx] = dt * RATES[idx];
-// 		states_temp[idx] = STATES[idx] + k3[idx];
-// 	}
-// 	computeRates(TIME+dt, CONSTANTS, RATES, states_temp, ALGEBRAIC );
-// 	for(idx = 0; idx < states_size; idx++){
-// 		k4[idx] = dt * RATES[idx];
-// 		STATES[idx] += (k1[idx]/6) + (k2[idx]/3) + (k3[idx]/3) + (k4[idx]/6) ;
-// 	}
-// }
+// double ohara_rudy_cipa_v1_2017::set_time_step(double TIME,
+//                                               double time_point,
+//                                               double min_time_step,
+//                                               double max_time_step,
+//                                               double min_dV,
+//                                               double max_dV) 
 
 __device__ double set_time_step (double TIME, double time_point, double max_time_step, double *CONSTANTS, double *RATES, int offset) {
  double min_time_step = 0.005;
- double time_step = min_time_step;
  double min_dV = 0.2;
  double max_dV = 0.8;
-
- short constant_size = 206;
- short rates_size = 49;
+ double time_step = min_time_step;
  
- if (TIME <= time_point || (TIME - floor(TIME / CONSTANTS[(constant_size * offset) +  BCL]) * CONSTANTS[(constant_size * offset) +  BCL]) <= time_point) {
+ if (TIME <= time_point || (TIME - floor(TIME / CONSTANTS[(206 * offset) + BCL]) * CONSTANTS[(206 * offset) + BCL]) <= time_point) {
     //printf("TIME <= time_point ms\n");
     return time_step;
     //printf("TIME = %E, dV = %E, time_step = %E\n",TIME, RATES[V] * time_step, time_step);
   }
   else {
     //printf("TIME > time_point ms\n");
-    if (std::abs(RATES[(rates_size * offset) + V] * time_step) <= min_dV) {//Slow changes in V
+    if (std::abs(RATES[(49 * offset) + V] * time_step) <= min_dV) {//Slow changes in V
         //printf("dV/dt <= 0.2\n");
-        time_step = std::abs(max_dV / RATES[(rates_size * offset) + V]);
+        time_step = std::abs(max_dV / RATES[(49 * offset) + V]);
         //Make sure time_step is between min time step and max_time_step
         if (time_step < min_time_step) {
             time_step = min_time_step;
@@ -1367,9 +1146,9 @@ __device__ double set_time_step (double TIME, double time_point, double max_time
         }
         //printf("TIME = %E, dV = %E, time_step = %E\n",TIME, RATES[V] * time_step, time_step);
     }
-    else if (std::abs(RATES[(rates_size * offset) + V] * time_step) >= max_dV) {//Fast changes in V
+    else if (std::abs(RATES[(49 * offset) + V] * time_step) >= max_dV) {//Fast changes in V
         //printf("dV/dt >= 0.8\n");
-        time_step = std::abs(min_dV / RATES[(rates_size * offset) + V]);
+        time_step = std::abs(min_dV / RATES[(49 * offset) + V]);
         //Make sure time_step is not less than 0.005
         if (time_step < min_time_step) {
             time_step = min_time_step;
@@ -1381,449 +1160,3 @@ __device__ double set_time_step (double TIME, double time_point, double max_time
     return time_step;
   }
 }
-
-/// using ord 2011 set time step
-// __device__ double set_time_step(double TIME, double time_point, double max_time_step, double *CONSTANTS, double *RATES, int offset) {
-//   double time_step = 0.005;
-//   int num_of_constants = 146;
-//   int num_of_rates = 41;
-
-//   if (TIME <= time_point || (TIME - floor(TIME / CONSTANTS[BCL + (offset * num_of_constants)]) * CONSTANTS[BCL + (offset * num_of_constants)]) <= time_point) {
-//     //printf("TIME <= time_point ms\n");
-//     return time_step;
-//     //printf("dV = %lf, time_step = %lf\n",RATES[V] * time_step, time_step);
-//   }
-//   else {
-//     //printf("TIME > time_point ms\n");
-//     if (std::abs(RATES[V + (offset * num_of_rates)] * time_step) <= 0.2) {//Slow changes in V
-//         // printf("dV/dt <= 0.2\n");
-//         time_step = std::abs(0.8 / RATES[V + (offset * num_of_rates)]);
-//         //Make sure time_step is between 0.005 and max_time_step
-//         if (time_step < 0.005) {
-//             time_step = 0.005;
-//         }
-//         else if (time_step > max_time_step) {
-//             time_step = max_time_step;
-//         }
-//         //printf("dV = %lf, time_step = %lf\n",std::abs(RATES[V] * time_step), time_step);
-//     }
-//     else if (std::abs(RATES[V + (offset * num_of_rates)] * time_step) >= 0.8) {//Fast changes in V
-//         // printf("dV/dt >= 0.8\n");
-//         time_step = std::abs(0.2 / RATES[V + (offset * num_of_rates)]);
-//         while (std::abs(RATES[V + (offset * num_of_rates)]  * time_step) >= 0.8 &&
-//                0.005 < time_step &&
-//                time_step < max_time_step) {
-//             time_step = time_step / 10.0;
-//             // printf("dV = %lf, time_step = %lf\n",std::abs(RATES[V] * time_step), time_step);
-//         }
-//     }
-//     // __syncthreads();
-//     return time_step;
-//   }
-// }
-
-
-
-
-// __device__ void numericalJacobian(double time, double *y, double **jac, double epsilon, double *CONSTANTS, double *ALGEBRAIC, int offset){
-//   const int num_of_states = 49;
-
-//   double g0[num_of_states]; // to store rates
-//   // rhs_fn(time,y,g0,data);
-//   // data->computeRates(time,data->CONSTANTS,g0,y,data->ALGEBRAIC); 
-//   computeRates( time, CONSTANTS, g0, y, ALGEBRAIC, offset );
-//   for (int j = 0; j < num_of_states; ++j) {
-//     double y_perturbed[num_of_states];
-//     for (int k = 0; k < num_of_states; ++k) {
-//         y_perturbed[k] = y[k];
-//     }
-//     y_perturbed[j] += epsilon; // y(i+1) - y(i) = epsilon * y(i)
-//     double g_perturbed[num_of_states]; // to store rates
-//     // rhs_fn(time,y_perturbed,g_perturbed,data);
-//     // data->computeRates(time,data->CONSTANTS,g_perturbed,y_perturbed,data->ALGEBRAIC);
-//     computeRates( time, CONSTANTS, g_perturbed, y_perturbed, ALGEBRAIC, offset );
-//     for (int i = 0; i < num_of_states; ++i) {
-//       jac[i][j] = (g_perturbed[i] - g0[i]) / (epsilon); // dg/dy = ( g(y(i+1)) - g(y(i)) ) / ( epsilon * y(i) ) 
-//     }
-//   }
-
-// }
-
-// __device__ void solveBDF1(double time, double dt, double epsilon, double *CONSTANTS,double *STATES, double *ALGEBRAIC, int offset){
-//   // Initialize solution
-//   const int num_of_states = 49;
-//   double y[num_of_states] = {0}; 
-//   double y_new[num_of_states] = {0};
-//   double F[num_of_states] = {0}; 
-//   double delta[num_of_states] = {0};
-
-//   for (int i = 0; i < num_of_states; ++i) {
-//       y[i] = STATES[(num_of_states * offset) + i];
-//   }
-//   if (offset == 0 )printf("input states to y\n");
-//   // Newton-Raphson method variables
-//   double **Jc = new double*[num_of_states]; //jacobian
-//   double Jcf[num_of_states * num_of_states] = {0};  // flatten of Jc
-
-//   for (int i = 0; i < num_of_states; i++){
-//     Jc[i] = new double[num_of_states];
-//   }
-
-//   if (offset == 0)printf("newton raphson done\n");
-//   // Initial guess
-//   for (int i = 0; i < num_of_states; ++i) {
-//     y_new[i] = y[i]; // Initial guess
-//   }
-//   // Newton-Raphson iterations
-//   for (int iter = 0; iter < 10000; ++iter) { 
-//     // rhs_fn(time,y_new,F,data);
-//     // computeRates(time,data->CONSTANTS,F,y_new,data->ALGEBRAIC);
-//     computeRates(time,CONSTANTS,F,y_new,ALGEBRAIC, offset);
-//     for (int i = 0; i < num_of_states; ++i) {
-//       F[i] = y_new[i] - y[i] - dt * F[i];
-//     }
-//     // jacobian(y_new, J); // or use numericalJacobian(y_new, J)
-//     // numericalJacobian(time,y_new,Jc,epsilon,data); 
-//     numericalJacobian(time, y_new, Jc, epsilon, CONSTANTS, ALGEBRAIC, offset);
-
-//     for (int i = 0; i < num_of_states; ++i) {
-//       for (int j = 0; j < num_of_states; ++j) {
-//         Jcf[i * num_of_states + j] = (i == j ? 1.0 : 0.0) - dt * Jc[i][j];
-//       }
-//     }
-    
-//     ___gaussElimination(Jcf,F,delta,num_of_states);
-//     if (offset == 0)printf("gauss in newton raphson loop\n");
-//     for (int i = 0; i < num_of_states; ++i) {
-//       y_new[i] -= delta[i];
-//     }
-//     double norm = 0.0;
-//     for (int i = 0; i < num_of_states; i++){
-//       norm = norm + delta[i] * delta[i];
-//     }
-//     norm = sqrt(norm);
-//     if (norm < epsilon){
-//       break;
-//     }   
-//     // if (iter == 999){
-//     //   std::cout << "BDF1 max iteration exceeded!\n";
-//     // }
-//   }
-//   for (int i = 0; i < num_of_states; i++){
-//     STATES[(num_of_states * offset) + i] = y_new[i];
-//   }
-//   for (int i = 0; i < num_of_states; i++){
-//     delete[] Jc[i];
-//   }
-//   delete[] Jc;
-// }
-
-
-
-
-
-// //  using vectors
-
-// __device__ void numericalJacobian(double time, double *y, double *jac, double epsilon, double *CONSTANTS, double *ALGEBRAIC, int offset) {
-//     const int num_of_states = 49;
-
-//     double g0[num_of_states]; // to store rates
-//     computeRates(time, CONSTANTS, g0, y, ALGEBRAIC, offset);
-
-//     for (int j = 0; j < num_of_states; ++j) {
-//         double y_perturbed[num_of_states];
-//         for (int k = 0; k < num_of_states; ++k) {
-//             y_perturbed[k] = y[k];
-//         }
-//         y_perturbed[j] += epsilon; // Perturb y[j]
-
-//         double g_perturbed[num_of_states]; // to store perturbed rates
-//         computeRates(time, CONSTANTS, g_perturbed, y_perturbed, ALGEBRAIC, offset);
-
-//         for (int i = 0; i < num_of_states; ++i) {
-//             jac[i * num_of_states + j] = (g_perturbed[i] - g0[i]) / epsilon; // Flattened Jacobian
-//         }
-//     }
-// }
-
-// // Helper function to perform Gaussian elimination
-// __device__ void ___gaussElimination(double *Jcf, double *F, double *delta, int num_of_states);
-
-// __device__ void solveBDF1(double time, double dt, double epsilon, double *CONSTANTS, double *STATES, double *ALGEBRAIC, int offset) {
-//     const int num_of_states = 49;
-
-//     double y[num_of_states];
-//     double y_new[num_of_states];
-//     double F[num_of_states];
-//     double delta[num_of_states];
-
-//     // Initialize y with STATES
-//     for (int i = 0; i < num_of_states; ++i) {
-//         y[i] = STATES[(num_of_states * offset) + i];
-//         y_new[i] = y[i]; // Initial guess
-//     }
-
-//     // Initialize thrust::device_vector for Jacobian matrix
-//     thrust::device_vector<double> Jc(num_of_states * num_of_states, 0.0);
-
-//     for (int iter = 0; iter < 10000; ++iter) {
-//         // Compute rates
-//         computeRates(time, CONSTANTS, F, y_new, ALGEBRAIC, offset);
-
-//         // Update F for Newton-Raphson
-//         for (int i = 0; i < num_of_states; ++i) {
-//             F[i] = y_new[i] - y[i] - dt * F[i];
-//         }
-
-//         // Calculate numerical Jacobian
-//         numericalJacobian(time, y_new, thrust::raw_pointer_cast(Jc.data()), epsilon, CONSTANTS, ALGEBRAIC, offset);
-
-//         // Flatten Jc and adjust for Newton-Raphson method
-//         for (int i = 0; i < num_of_states; ++i) {
-//             for (int j = 0; j < num_of_states; ++j) {
-//                 Jc[i * num_of_states + j] = (i == j ? 1.0 : 0.0) - dt * Jc[i * num_of_states + j];
-//             }
-//         }
-
-//         // Solve the system of linear equations using Gaussian elimination
-//         ___gaussElimination(thrust::raw_pointer_cast(Jc.data()), F, delta, num_of_states);
-
-//         // Update solution y_new
-//         double norm = 0.0;
-//         for (int i = 0; i < num_of_states; i++) {
-//             y_new[i] -= delta[i];
-//             norm += delta[i] * delta[i];
-//         }
-//         norm = sqrt(norm);
-
-//         // Check for convergence
-//         if (norm < epsilon) {
-//             break;
-//         }
-//     }
-
-//     // Update STATES with the new solution
-//     for (int i = 0; i < num_of_states; i++) {
-//         STATES[(num_of_states * offset) + i] = y_new[i];
-//     }
-// }
-
-
-
-
-__device__ void numericalJacobian(double time, double *y, double *jac, double epsilon, double *CONSTANTS, double *ALGEBRAIC, 
-                                 double *y_perturbed, double *g0, double *g_perturbed,
-                                int offset) {
-
-    const int num_of_states = 49;
-    int jc_offset = num_of_states * num_of_states * offset;
-    
-    computeRates(time, CONSTANTS, g0, y, ALGEBRAIC, offset);
-
-    for (int j = 0; j < num_of_states; ++j) {
-        
-        for (int k = 0; k < num_of_states; ++k) {
-            y_perturbed[(num_of_states * offset) + k] = y[(num_of_states * offset) + k];
-        }
-        y_perturbed[(num_of_states * offset) + j] += epsilon; // Perturb y[j]
-
-        computeRates(time, CONSTANTS, g_perturbed, y_perturbed, ALGEBRAIC, offset);
-
-        for (int i = 0; i < num_of_states; ++i) {
-            jac[i * num_of_states + j + jc_offset] = (g_perturbed[(num_of_states * offset) + i] - g0[(num_of_states * offset) + i]) / epsilon; // Flattened Jacobian
-        }
-    }
-}
-// // without shared memory
-// __global__ void numericalJacobianKernel(double time, double *y, double *jac, double epsilon, double *CONSTANTS, double *ALGEBRAIC, int offset) {
-//     int j = blockIdx.x * blockDim.x + threadIdx.x;
-//     int i = blockIdx.y * blockDim.y + threadIdx.y;
-//     const int num_of_states = 49;
-
-//     if (i < num_of_states && j < num_of_states) {
-//         // Allocate g0 and g_perturbed in shared memory if appropriate, or on the stack but within the kernel
-//         double g0[49]; // assuming num_of_states = 49
-//         double g_perturbed[49];
-
-//         computeRates(time, CONSTANTS, g0, y, ALGEBRAIC, offset);
-
-//         // Allocate y_perturbed in shared memory or ensure it stays within the kernel's scope
-//         double y_perturbed[49];
-//         for (int k = 0; k < num_of_states; ++k) {
-//             y_perturbed[k] = y[k];
-//         }
-//         y_perturbed[j] += epsilon; // Perturb y[j]
-
-//         computeRates(time, CONSTANTS, g_perturbed, y_perturbed, ALGEBRAIC, offset);
-
-//         jac[i * num_of_states + j] = (g_perturbed[i] - g0[i]) / epsilon;
-//     }
-// }
-
-// with shared memory
-// __global__ void numericalJacobianKernel(double time, double *y, double *jac, double epsilon, double *CONSTANTS, double *ALGEBRAIC, int num_of_states, int offset) {
-//     __shared__ double shared_y[49];  // Assuming num_of_states = 49
-
-//     int j = blockIdx.x * blockDim.x + threadIdx.x;
-//     int i = blockIdx.y * blockDim.y + threadIdx.y;
-
-//     if (i < num_of_states && j < num_of_states) {
-//         if (threadIdx.x < num_of_states) {
-//             shared_y[threadIdx.x] = y[threadIdx.x];
-//         }
-//         __syncthreads();
-
-//         double g0[49];
-//         double g_perturbed[49];
-
-//         computeRates(time, CONSTANTS, g0, shared_y, ALGEBRAIC, offset);
-
-//         double y_perturbed[49];
-//         for (int k = 0; k < num_of_states; ++k) {
-//             y_perturbed[k] = shared_y[k];
-//         }
-//         y_perturbed[j] += epsilon; // Perturb y[j]
-
-//         computeRates(time, CONSTANTS, g_perturbed, y_perturbed, ALGEBRAIC, offset);
-
-//         jac[i * num_of_states + j] = (g_perturbed[i] - g0[i]) / epsilon;
-//     }
-// }
-
-
-
-// without jacobian optimisation
-__device__ void solveBDF1(double time, double dt, double epsilon, double *CONSTANTS, double *STATES, double *ALGEBRAIC, 
-                        double *y, double *y_new, double *F, double *delta, double *Jc, double *y_perturbed, double *g0, double *g_perturbed,
-                        int offset) {
-
-    const int num_of_states = 49;
-    int jc_offset = num_of_states * num_of_states * offset;
-
-    // Initialize y with STATES
-    for (int i = 0; i < num_of_states; ++i) {
-        y[(num_of_states * offset) + i] = STATES[(num_of_states * offset) + i];
-        y_new[(num_of_states * offset) + i] = y[(num_of_states * offset) + i]; // Initial guess
-    }
-
-    // Allocate memory for Jacobian matrix on device -> moved to CPU
-    // double *Jc;
-    // size_t Jc_size = num_of_states * num_of_states * sizeof(float);
-    // cudaError_t err = cudaMalloc(&Jc, Jc_size);
-    // if (err != cudaSuccess) {
-    //     printf("Failed to allocate memory for Jacobian matrix (error code %s)!\n", cudaGetErrorString(err));
-    //     //return;
-    // }
-    //  if (offset == 0 )printf("Allocate jacobian\n");
-    for (int iter = 0; iter < 10000; ++iter) {
-        // Compute rates
-        computeRates(time, CONSTANTS, F, y_new, ALGEBRAIC, offset);
-
-        // Update F for Newton-Raphson
-        for (int i = 0; i < num_of_states; ++i) {
-            F[(num_of_states * offset) + i] = y_new[(num_of_states * offset) + i] - y[(num_of_states * offset) + i] - dt * F[(num_of_states * offset) + i];
-        }
-
-        // Calculate numerical Jacobian
-        numericalJacobian(time, y_new, Jc, epsilon, CONSTANTS, ALGEBRAIC, y_perturbed, g0, g_perturbed, offset);
-        // if (offset == 0 )printf("call jacobian numerical\n");
-
-        // Flatten Jc and adjust for Newton-Raphson method
-        for (int i = 0; i < num_of_states; ++i) {
-            for (int j = 0; j < num_of_states; ++j) {
-                Jc[i * num_of_states + j + jc_offset] = (i == j ? 1.0 : 0.0) - dt * Jc[i * num_of_states + j + jc_offset];
-            }
-        }
-        //  if (offset == 0 )printf("flatten jc\n");
-
-        // Solve the system of linear equations using Gaussian elimination
-        ___gaussElimination(Jc, F, delta, num_of_states, offset);
-        //  if (offset == 0 )printf("Gauss elemination\n");
-
-        //
-        double norm = 0.0;
-        for (int i = 0; i < num_of_states; i++) {
-            y_new[(num_of_states * offset) + i] -= delta[(num_of_states * offset) + i];
-            norm += delta[(num_of_states * offset) + i] * delta[(num_of_states * offset) + i];
-        }
-        norm = sqrt(norm);
-        // if (offset == 0 )printf("Update solution y_new\n");
-
-        // Check for convergence
-        if (norm < epsilon) {
-            break;
-        }
-    }
-
-    // Update STATES with the new solution
-    for (int i = 0; i < num_of_states; i++) {
-        STATES[(num_of_states * offset) + i] = y_new[(num_of_states * offset) + i];
-    }
-
-    // Free the allocated memory for the Jacobian matrix
-    // cudaFree(Jc);
-}
-
-// // with jacobian matrix as gpu kernel
-// __device__ void solveBDF1(double time, double dt, double epsilon, double *CONSTANTS, double *STATES, double *ALGEBRAIC, int offset) {
-//     const int num_of_states = 49;
-
-//     double y[49];
-//     double y_new[49];
-//     double F[49];
-//     double delta[49];
-
-//     // Initialize y with STATES
-//     for (int i = 0; i < num_of_states; ++i) {
-//         y[i] = STATES[(num_of_states * offset) + i];
-//         y_new[i] = y[i];
-//     }
-
-//     // Allocate memory for Jacobian matrix on device
-//     double *Jc;
-//     size_t Jc_size = num_of_states * num_of_states * sizeof(double);
-//     cudaError_t err = cudaMalloc(&Jc, Jc_size);
-//     if (err != cudaSuccess) {
-//         printf("Failed to allocate memory for Jacobian matrix (error code %s)!\n", cudaGetErrorString(err));
-//     }
-
-//     dim3 threadsPerBlock(16, 16);
-//     dim3 numBlocks((num_of_states + threadsPerBlock.x - 1) / threadsPerBlock.x,
-//                    (num_of_states + threadsPerBlock.y - 1) / threadsPerBlock.y);
-
-//     for (int iter = 0; iter < 10000; ++iter) {
-//         computeRates(time, CONSTANTS, F, y_new, ALGEBRAIC, offset);
-
-//         for (int i = 0; i < num_of_states; ++i) {
-//             F[i] = y_new[i] - y[i] - dt * F[i];
-//         }
-
-//         // Launch numericalJacobianKernel from the device function
-//         numericalJacobianKernel<<<numBlocks, threadsPerBlock>>>(time, y_new, Jc, epsilon, CONSTANTS, ALGEBRAIC, offset);
-
-//         for (int i = 0; i < num_of_states; ++i) {
-//             for (int j = 0; j < num_of_states; ++j) {
-//                 Jc[i * num_of_states + j] = (i == j ? 1.0 : 0.0) - dt * Jc[i * num_of_states + j];
-//             }
-//         }
-
-//         ___gaussElimination(Jc, F, delta, num_of_states);
-
-//         double norm = 0.0;
-//         for (int i = 0; i < num_of_states; i++) {
-//             y_new[i] -= delta[i];
-//             norm += delta[i] * delta[i];
-//         }
-//         norm = sqrt(norm);
-
-//         if (norm < epsilon) {
-//             break;
-//         }
-//     }
-
-//     for (int i = 0; i < num_of_states; i++) {
-//         STATES[(num_of_states * offset) + i] = y_new[i];
-//     }
-
-//     cudaFree(Jc);
-// }
