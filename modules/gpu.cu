@@ -180,7 +180,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     // cipa_result[sample_id].ca_valley = 9.;
 
     // printf("%d: %lf, %d\n", sample_id,d_STATES[V + (sample_id * num_of_states)], cnt);
-    applyDrugEffect(d_CONSTANTS, conc, d_ic50, epsilon, sample_id);
+    applyDrugEffect(d_CONSTANTS, conc, d_ic50, /*epsilon,*/ sample_id);
 
     d_CONSTANTS[BCL + (sample_id * num_of_constants)] = bcl;
 
