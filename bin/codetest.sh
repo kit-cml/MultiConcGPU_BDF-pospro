@@ -1,4 +1,4 @@
 cd ..
 make clean all
 cd bin
-./drug_sim -input_deck input_deck_example.txt -hill_file drug/testing/few_IC50_verapamil.csv -herg_file herg/few_verapamil_2000.csv -init_file init_IC50_verapamil/few_state_only.csv
+./drug_sim -input_deck input_deck_example.txt -hill_file ./euler_quinidine_cmax3_4_CIPA.csv -herg_file herg/quinidine_4000.csv -init_file ./quinidine_cmax3_4_1000pace_state_only.csv
