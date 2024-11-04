@@ -153,7 +153,6 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     // to the d_STATES and bring them back to cached initial values:
     // TODO: 1. modify this line of code to make it clean
     // TODO: 2. copy array
-    int cnt = -1;  //(0-40)
     for (int temp = 0; temp < num_of_states; temp++) {
         /// let this part as usual                        //// apply the +1 first and +1 end shifting here
         // d_STATES_RESULT[(sample_id * (num_of_states+1)) + num_of_states ] = pace_count;
@@ -179,7 +178,6 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     // cipa_result[sample_id].vm_valley = 9.;
     // cipa_result[sample_id].ca_valley = 9.;
 
-    // printf("%d: %lf, %d\n", sample_id,d_STATES[V + (sample_id * num_of_states)], cnt);
     // applyDrugEffect(d_CONSTANTS, conc, d_ic50, /*epsilon,*/ sample_id);
 
     d_CONSTANTS[BCL + (sample_id * num_of_constants)] = bcl;
@@ -203,7 +201,6 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
     // num_of_states)],d_RATES[V + (sample_id * num_of_rates)]); printf("%lf,%lf,%lf,%lf,%lf\n", d_ic50[0 +
     // (14*sample_id)], d_ic50[1+ (14*sample_id)], d_ic50[2+ (14*sample_id)], d_ic50[3+ (14*sample_id)], d_ic50[4+
     // (14*sample_id)]);
-    printf("here\n");
     while (tcurr[sample_id] < tmax) {
         computeRates(tcurr[sample_id], d_CONSTANTS, d_RATES, d_STATES, d_ALGEBRAIC, sample_id);
 
