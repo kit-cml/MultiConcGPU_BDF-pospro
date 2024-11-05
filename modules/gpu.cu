@@ -221,19 +221,6 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
                 dt[sample_id];
             inal_auc += d_ALGEBRAIC[(sample_id * num_of_algebraic) + INaL] * dt[sample_id];
             ical_auc += d_ALGEBRAIC[(sample_id * num_of_algebraic) + ICaL] * dt[sample_id];
-
-            if (sample_id == 1){
-            printf("%lf %lf %lf %lf %lf %lf\n",
-            (d_ALGEBRAIC[(sample_id * num_of_algebraic) +INaL]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
-            +ICaL]+d_ALGEBRAIC[(sample_id * num_of_algebraic) +Ito]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
-            +IKr]+d_ALGEBRAIC[(sample_id * num_of_algebraic) +IKs]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
-            +IK1])*dt[sample_id], d_ALGEBRAIC[(sample_id * num_of_algebraic) +INaL]*dt[sample_id],
-            d_ALGEBRAIC[(sample_id * num_of_algebraic) +ICaL]*dt[sample_id],
-            inet,
-            inal_auc,
-            ical_auc
-            );
-            }
         }
         // printf("INaL AUC: %lf\n", inal_auc);
         //  how can we properly update this value?
@@ -481,7 +468,20 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
             input_counter = input_counter + sample_size;
             cipa_datapoint = cipa_datapoint + 1;  // this causes the resource usage got so mega and crashed in running
             dtw_counter = 0;
-            if (sample_id == 0) printf("Printed!\n");
+            if (sample_id == 0){
+            printf("%lf %lf %lf %lf %lf %lf, time: %lf\n",
+            (d_ALGEBRAIC[(sample_id * num_of_algebraic) +INaL]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
+            +ICaL]+d_ALGEBRAIC[(sample_id * num_of_algebraic) +Ito]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
+            +IKr]+d_ALGEBRAIC[(sample_id * num_of_algebraic) +IKs]+d_ALGEBRAIC[(sample_id * num_of_algebraic)
+            +IK1])*dt[sample_id], 
+            d_ALGEBRAIC[(sample_id * num_of_algebraic) +INaL]*dt[sample_id],
+            d_ALGEBRAIC[(sample_id * num_of_algebraic) +ICaL]*dt[sample_id],
+            inet,
+            inal_auc,
+            ical_auc,
+            tcurr[0]
+            );
+            }
         }
 
         // cipa result update
@@ -509,7 +509,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
           printf("core %d has nan, ejecting\n", sample_id);
           return;
         }
-        if (sample_id == 0) printf("time: %lf\n", tcurr[0]);
+        
         dtw_counter++;
 
     }  // while (tcurr[sample_id] < tmax) loop ends here
