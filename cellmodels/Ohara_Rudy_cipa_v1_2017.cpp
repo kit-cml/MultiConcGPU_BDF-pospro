@@ -786,22 +786,22 @@ CONSTANTS[(206 * offset) +  Pnak] = (CONSTANTS[(206 * offset) +  celltype]==1.00
 
 __device__ void applyDrugEffect(double *CONSTANTS, double conc, double *hill, int offset)
 {
-CONSTANTS[(206 * offset) +  PCa_b] *= ((hill[0] > 10E-14 && hill[1] > 10E-14) ? 1./(1.+pow(conc/hill[0],hill[1])) : 1.);
-CONSTANTS[(206 * offset) +  GK1_b] *= ((hill[2] > 10E-14 && hill[3] > 10E-14) ? 1./(1.+pow(conc/hill[2],hill[3])) : 1.);
-CONSTANTS[(206 * offset) +  GKs_b] *= ((hill[4] > 10E-14 && hill[5] > 10E-14) ? 1./(1.+pow(conc/hill[4],hill[5])) : 1.);
-CONSTANTS[(206 * offset) +  GNa] *= ((hill[6] > 10E-14 && hill[7] > 10E-14) ? 1./(1.+pow(conc/hill[6],hill[7])) : 1.);
-CONSTANTS[(206 * offset) +  GNaL_b] *= ((hill[8] > 10E-14 && hill[9] > 10E-14) ? 1./(1.+pow(conc/hill[8],hill[9])) : 1.);
-CONSTANTS[(206 * offset) +  Gto_b] *= ((hill[10] > 10E-14 && hill[11] > 10E-14) ? 1./(1.+pow(conc/hill[10],hill[11])) : 1.);
-//CONSTANTS[(206 * offset) +  GKr_b] = CONSTANTS[(206 * offset) +  GKr_b] * ((hill[12] > 10E-14 && hill[13] > 10E-14) ? 1./(1.+pow(conc/hill[12],hill[13])) : 1.);
+CONSTANTS[(206 * offset) +  PCa_b] *= ((hill[(offset*14) + 0] > 10E-14 && hill[(offset*14) + 1] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 0],hill[(offset*14) + 1])) : 1.);
+CONSTANTS[(206 * offset) +  GK1_b] *= ((hill[(offset*14) + 2] > 10E-14 && hill[(offset*14) + 3] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 2],hill[(offset*14) + 3])) : 1.);
+CONSTANTS[(206 * offset) +  GKs_b] *= ((hill[(offset*14) + 4] > 10E-14 && hill[(offset*14) + 5] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 4],hill[(offset*14) + 5])) : 1.);
+CONSTANTS[(206 * offset) +  GNa] *= ((hill[(offset*14) + 6] > 10E-14 && hill[(offset*14) + 7] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 6],hill[(offset*14) + 7])) : 1.);
+CONSTANTS[(206 * offset) +  GNaL_b] *= ((hill[(offset*14) + 8] > 10E-14 && hill[(offset*14) + 9] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 8],hill[(offset*14) + 9])) : 1.);
+CONSTANTS[(206 * offset) +  Gto_b] *= ((hill[(offset*14) + 10] > 10E-14 && hill[(offset*14) + 11] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 10],hill[(offset*14) + 11])) : 1.);
+//CONSTANTS[(206 * offset) +  GKr_b] = CONSTANTS[(206 * offset) +  GKr_b] * ((hill[(offset*14) + 12] > 10E-14 && hill[(offset*14) + 13] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 12],hill[(offset*14) + 13])) : 1.);
 }
 
 __device__ void ___applyHERGBinding(double *CONSTANTS, double *STATES, double conc, double *herg, int offset)
 {
-CONSTANTS[(206 * offset) +  Kmax] = herg[0];
-CONSTANTS[(206 * offset) +  Ku] = herg[1];
-CONSTANTS[(206 * offset) +  n] = herg[2];
-CONSTANTS[(206 * offset) +  halfmax] = herg[3];
-CONSTANTS[(206 * offset) +  Vhalf] = herg[4];
+CONSTANTS[(206 * offset) +  Kmax] = herg[(offset*6) + 0];
+CONSTANTS[(206 * offset) +  Ku] = herg[(offset*6) + 1];
+CONSTANTS[(206 * offset) +  n] = herg[(offset*6) + 2];
+CONSTANTS[(206 * offset) +  halfmax] = herg[(offset*6) + 3];
+CONSTANTS[(206 * offset) +  Vhalf] = herg[(offset*6) + 4];
 CONSTANTS[(206 * offset) +  cnc] = conc;
 STATES[(49 * offset) + D] = CONSTANTS[(206 * offset) +  cnc];
 CONSTANTS[(206 * offset) +  Kt] = 0.000035;
@@ -810,28 +810,32 @@ CONSTANTS[(206 * offset) +  Kt] = 0.000035;
 __device__ void initConsts(double *CONSTANTS, double *STATES, double type, double conc, double *hill, double *herg, double *cvar, bool is_dutta, bool is_cvar, double bcl, double epsilon, int offset)
 {
   ___initConsts(CONSTANTS, STATES, type, bcl, offset);
-//   mpi_printf(0,"Celltype: %lf\n", CONSTANTS[celltype]);
-//   mpi_printf(0,"Concentration: %lf\n", conc);
-//   mpi_printf(0,"Control: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
-//       CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b]);
+  if (offset == 0){
+  printf("Celltype: %lf\n", CONSTANTS[celltype]);
+  printf("Concentration: %lf\n", conc);
+  printf("Control: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
+      CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b]);
   applyDrugEffect(CONSTANTS, conc, hill, offset);
-//   mpi_printf(0,"Hill data:\n");
-//   for(int idx = 0; idx < 14; idx++){
-//     mpi_printf(0,"%lf,", hill[idx]);
-//   }
-//   mpi_printf(0,"\n");
-//   mpi_printf(0,"After drug: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
-//       CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b]);
-//   mpi_printf(0,"Control hERG binding: \nKmax:%lf \nKu:%lf \nn:%lf \nhalfmax:%lf \nVhalf:%lf \nD:%lf \nKt:%lf\n", 
-//       CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], STATES[(49 * offset) + D], CONSTANTS[Kt]);
+  printf("Hill data:\n");
+  for(int idx = 0; idx < 14; idx++){
+    printf("%lf,", hill[idx]);
+  }
+  printf("\n");
+  printf("After drug: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
+      CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b]);
+  printf("Control hERG binding: \nKmax:%lf \nKu:%lf \nn:%lf \nhalfmax:%lf \nVhalf:%lf \nD:%lf \nKt:%lf\n", 
+      CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], STATES[D], CONSTANTS[Kt]);
+  }
   if( conc > 10E-14 ) ___applyHERGBinding(CONSTANTS, STATES, conc, herg, offset);
-//   mpi_printf(0,"hERG data:\n");
-//   for(int idx = 0; idx < 6; idx++){
-//     mpi_printf(0,"%lf,", herg[idx]);
-//   }
-//   mpi_printf(0,"\n");
-//   mpi_printf(0,"Bootstraped hERG binding: \nKmax:%lf \nKu:%lf \nn:%lf \nhalfmax:%lf \nVhalf:%lf \nD:%lf \nKt:%lf\n",
-//       CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], STATES[(49 * offset) + D], CONSTANTS[Kt]);
+  if (offset == 0){
+  printf("hERG data:\n");
+  for(int idx = 0; idx < 6; idx++){
+    printf("%lf,", herg[idx]);
+  }
+  printf("\n");
+  printf("Bootstraped hERG binding: \nKmax:%lf \nKu:%lf \nn:%lf \nhalfmax:%lf \nVhalf:%lf \nD:%lf \nKt:%lf\n",
+      CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], STATES[D], CONSTANTS[Kt]);
+  }
 }
 
 __device__ void computeRates( double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC, int offset )

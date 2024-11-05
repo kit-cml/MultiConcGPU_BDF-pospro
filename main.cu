@@ -167,21 +167,21 @@ int get_IC50_data_from_file(const char *file_name, double *ic50, double *conc, c
         */
 
         token = strtok(buffer_ic50, ",");
-        printf("%s\n", token);  // testingAuto
+        // printf("%s\n", token);  // testingAuto
         strcpy(tmp_drug_name, token);
         token = strtok(NULL, ",");
-        printf("%s\n", token);  // testingAuto
+        // printf("%s\n", token);  // testingAuto
         strcat(tmp_drug_name, "_");
         strcat(tmp_drug_name, token);
 
-        printf("%s\n", tmp_drug_name);  // testingAuto
+        // printf("%s\n", tmp_drug_name);  // testingAuto
         addDrugData(&drug_name, drugsize, tmp_drug_name);
         conc[idx_conc++] = strtod(token, NULL);
         token = strtok(NULL, ",");
         // Check if there is wrong in here
         while (token != NULL) {  // begin data tokenizing
             ic50[idx_ic50++] = strtod(token, NULL);
-            printf("%s\n", token);  // testingAuto
+            // printf("%s\n", token);  // testingAuto
             token = strtok(NULL, ",");
         }  // end data tokenizing
         sample_size++;
@@ -508,6 +508,7 @@ int main(int argc, char **argv) {
 
         cudaMalloc(&d_all_states, num_of_states * sample_size * p_param->find_steepest_start * sizeof(double)); // for each sample
         cudaMalloc(&d_herg, 6 * sample_size * sizeof(double));
+        cudaMemcpy(d_herg, herg, sample_size * 6 * sizeof(double), cudaMemcpyHostToDevice);
 
     // // Get the maximum number of active blocks per multiprocessor
     // cudaOccupancyMaxActiveBlocksPerMultiprocessor(&numBlocks, do_drug_sim_analytical, threadsPerBlock);
