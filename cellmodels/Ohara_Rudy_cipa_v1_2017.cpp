@@ -815,27 +815,34 @@ __device__ void initConsts(double *CONSTANTS, double *STATES, double type, doubl
   printf("Concentration: %lf\n", conc);
   printf("Control: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
       CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b]);
+  }
+
   applyDrugEffect(CONSTANTS, conc, hill, offset);
+  
+  if (offset == 0){
   printf("Hill data:\n");
   for(int idx = 0; idx < 14; idx++){
     printf("%lf,", hill[idx]);
-  }
+    }
   printf("\n");
   printf("After drug: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
       CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b]);
   printf("Control hERG binding: \nKmax:%lf \nKu:%lf \nn:%lf \nhalfmax:%lf \nVhalf:%lf \nD:%lf \nKt:%lf\n", 
       CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], STATES[D], CONSTANTS[Kt]);
   }
+
   if( conc > 10E-14 ) ___applyHERGBinding(CONSTANTS, STATES, conc, herg, offset);
+
   if (offset == 0){
   printf("hERG data:\n");
   for(int idx = 0; idx < 6; idx++){
     printf("%lf,", herg[idx]);
-  }
+    }
   printf("\n");
   printf("Bootstraped hERG binding: \nKmax:%lf \nKu:%lf \nn:%lf \nhalfmax:%lf \nVhalf:%lf \nD:%lf \nKt:%lf\n",
       CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], STATES[D], CONSTANTS[Kt]);
   }
+  
 }
 
 __device__ void computeRates( double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC, int offset )
