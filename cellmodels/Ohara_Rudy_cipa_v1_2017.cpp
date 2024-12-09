@@ -807,14 +807,47 @@ STATES[(49 * offset) + D] = CONSTANTS[(206 * offset) +  cnc];
 CONSTANTS[(206 * offset) +  Kt] = 0.000035;
 }
 
+__device__ void ___applyCvar(double *CONSTANTS, double *cvar, int offset)
+{
+  int num_of_constants = 206;
+
+  CONSTANTS[(offset * num_of_constants) +GNa] *= cvar[0 + (offset*18)];		// GNa
+  CONSTANTS[(offset * num_of_constants) +GNaL] *= cvar[1 + (offset*18)];		// GNaL
+  CONSTANTS[(offset * num_of_constants) +Gto] *= cvar[2 + (offset*18)];		// Gto
+  CONSTANTS[(offset * num_of_constants) +GKr] *= cvar[3 + (offset*18)];		// GKr
+  CONSTANTS[(offset * num_of_constants) +GKs] *= cvar[4 + (offset*18)];		// GKs
+  CONSTANTS[(offset * num_of_constants) +GK1] *= cvar[5 + (offset*18)];		// GK1
+  CONSTANTS[(offset * num_of_constants) +Gncx] *= cvar[6 + (offset*18)];		// GNaCa
+  CONSTANTS[(offset * num_of_constants) +GKb] *= cvar[7 + (offset*18)];		// GKb
+  CONSTANTS[(offset * num_of_constants) +PCa] *= cvar[8 + (offset*18)];		// PCa
+  CONSTANTS[(offset * num_of_constants) +Pnak] *= cvar[9 + (offset*18)];		// INaK
+  CONSTANTS[(offset * num_of_constants) +PNab] *= cvar[10 + (offset*18)];		// PNab
+  CONSTANTS[(offset * num_of_constants) +PCab] *= cvar[11 + (offset*18)];		// PCab
+  CONSTANTS[(offset * num_of_constants) +GpCa] *= cvar[12 + (offset*18)];		// GpCa
+  CONSTANTS[(offset * num_of_constants) +KmCaMK] *= cvar[17 + (offset*18)];	// KCaMK
+
+  // Additional constants
+  // CONSTANTS[(offset * num_of_constants) +Jrel_scale] *= cvar[13 + (offset*18)];	// SERCA_Total (release)
+  // CONSTANTS[(offset * num_of_constants) +Jup_scale] *= cvar[14 + (offset*18)];	// RyR_Total (uptake)
+  // CONSTANTS[(offset * num_of_constants) +Jtr_scale] *= cvar[15 + (offset*18)];	// Trans_Total (NSR to JSR translocation)
+  // CONSTANTS[(offset * num_of_constants) +Jleak_scale] *= cvar[16 + (offset*18)];	// Leak_Total (Ca leak from NSR)
+  // CONSTANTS[(offset * num_of_constants) +KCaMK_scale] *= cvar[17 + (offset*18)];	// KCaMK
+}
+
 __device__ void initConsts(double *CONSTANTS, double *STATES, double type, double conc, double *hill, double *herg, double *cvar, bool is_dutta, bool is_cvar, double bcl, double epsilon, int offset)
 {
   ___initConsts(CONSTANTS, STATES, type, bcl, offset);
+
+  //  if(is_cvar == true){
+	// 	___applyCvar(CONSTANTS, cvar, offset);
+	// }
+
   if (offset == 0){
   printf("Celltype: %lf\n", CONSTANTS[celltype]);
   printf("Concentration: %lf\n", conc);
-  printf("Control: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
-      CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b]);
+  printf("Control: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n \n\nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
+      CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b],
+      CONSTANTS[PCa], CONSTANTS[GK1], CONSTANTS[GKs], CONSTANTS[GNa], CONSTANTS[GNaL], CONSTANTS[Gto], CONSTANTS[GKr]);
   }
 
   applyDrugEffect(CONSTANTS, conc, hill, offset);
@@ -842,6 +875,16 @@ __device__ void initConsts(double *CONSTANTS, double *STATES, double type, doubl
   printf("Bootstraped hERG binding: \nKmax:%lf \nKu:%lf \nn:%lf \nhalfmax:%lf \nVhalf:%lf \nD:%lf \nKt:%lf\n",
       CONSTANTS[Kmax], CONSTANTS[Ku], CONSTANTS[n], CONSTANTS[halfmax], CONSTANTS[Vhalf], STATES[D], CONSTANTS[Kt]);
   }
+
+
+
+  if(is_cvar == true && offset == 0){  
+    ___applyCvar(CONSTANTS, cvar, offset);
+    printf("\n");
+    printf("After cvar: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
+      CONSTANTS[PCa], CONSTANTS[GK1], CONSTANTS[GKs], CONSTANTS[GNa], CONSTANTS[GNaL], CONSTANTS[Gto], CONSTANTS[GKr]);
+		
+	}
   
 }
 

@@ -437,22 +437,8 @@ int main(int argc, char **argv) {
 
     printf("preparing GPU memory space \n");
 
-    // char buffer_cvar[255];
-    // snprintf(buffer_cvar, sizeof(buffer_cvar),
-    // "./result/66_00.csv"
-    // // "./drugs/optimized_pop_10k.csv"
-    // );
     int cache_num = get_init_data_from_file(p_param->cache_file, cache);
     printf("Found cache for %d samples\n", cache_num);
-    // note to self:
-    // num of states+2 gave you at the very end of the file (pace number)
-    // the very beginning -> the core number
-    //   for (int z = 0; z <  num_of_states; z++) {printf("%lf\n", cache[z+1]);}
-    //   printf("\n");
-    //   for (int z = 0; z <  num_of_states; z++) {printf("%lf\n", cache[ 1*(num_of_states+2) + (z+2)]);}
-    //   printf("\n");
-    //   for (int z = 0; z <  num_of_states; z++) {printf("%lf\n", cache[ 2*(num_of_states+2) + (z+3)]);}
-    // return 0 ;
 
     cudaMalloc(&d_ALGEBRAIC, num_of_algebraic * sample_size * sizeof(double));
     cudaMalloc(&d_CONSTANTS, num_of_constants * sample_size * sizeof(double));
@@ -482,11 +468,12 @@ int main(int argc, char **argv) {
 
     printf("Copying sample files to GPU memory space \n");
     cudaMalloc(&d_ic50, sample_size * 14 * sizeof(double));
-    // cudaMalloc(&d_cvar, sample_size * 18 * sizeof(double));
+    cudaMalloc(&d_cvar, sample_size * 18 * sizeof(double));
     cudaMalloc(&d_conc, sample_size * sizeof(double));
+    
     cudaMemcpy(d_STATES_cache, cache, (num_of_states + 2) * sample_size * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_ic50, ic50, sample_size * 14 * sizeof(double), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_cvar, cvar, sample_size * 18 * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_cvar, cvar, sample_size * 18 * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_conc, conc, sample_size * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_p_param, p_param, sizeof(param_t), cudaMemcpyHostToDevice);
 
