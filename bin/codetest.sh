@@ -11,4 +11,5 @@ cd bin
 
 # ./drug_sim -input_deck input_deck_example.txt -hill_file ./drug_test/IC50_quinidine.csv -init_file init_quinidine_cvar.csv  -herg_file ./herg/quinidine_2000.csv  -cvar_file cvar_optimised_2k.csv
 
-./drug_sim -input_deck input_deck_example.txt -hill_file ./drug_test/test_cvar_4k_3_4.csv -init_file init_bepridil_cmax3_4_cvar.csv  -herg_file ./herg/bepridil_4000.csv  -cvar_file optimized_4k.csv
+./drug_sim -input_deck input_deck_example.txt -hill_file ./drug_test/IC50_bepridil_simple_1_2.csv -init_file init_bepridil_cmax1_2_cvar.csv  -herg_file ./herg/bepridil_4000.csv  -cvar_file optimized_4k.csv
+./drug_sim -input_deck input_deck_example.txt -hill_file ./drug_test/IC50_bepridil_simple_3_4.csv -init_file init_bepridil_cmax3_4_cvar.csv  -herg_file ./herg/bepridil_4000.csv  -cvar_file optimized_4k.csv
