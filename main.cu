@@ -351,7 +351,7 @@ int main(int argc, char **argv) {
     conc = (double *)malloc(sample_limit * sizeof(double));
     double* herg = (double *)malloc(6 * sample_limit * sizeof(double));
 
-    int num_of_constants = 206;
+    int num_of_constants = 208;
     int num_of_states = 49;
     int num_of_algebraic = 200;
     int num_of_rates = 49;

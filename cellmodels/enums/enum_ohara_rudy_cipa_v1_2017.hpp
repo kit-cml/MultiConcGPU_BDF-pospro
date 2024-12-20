@@ -412,6 +412,9 @@ enum E_CONSTANTS_T{
   a4 = 203,
   Pnak = 204,
   cnc = 205,
+  // CVAR: enum for scaling factor Jtr and Jleak
+  Jtr_b = 206,
+  Jleak_b = 207,
 };
 
 

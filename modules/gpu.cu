@@ -25,7 +25,7 @@ __device__ void kernel_DoDrugSim_single(double *d_ic50, double *d_cvar, double d
                                         double *y, double *y_new, double *F, double *delta, double *Jc, double *y_perturbed, double *g0, double *g_perturbed) {
     unsigned long long input_counter = 0;
 
-    int num_of_constants = 206;
+    int num_of_constants = 208;
     int num_of_states = 49;
     int num_of_algebraic = 200;
     int num_of_rates = 49;
