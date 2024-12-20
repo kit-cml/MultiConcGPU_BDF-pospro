@@ -789,13 +789,13 @@ CONSTANTS[(208 * offset) +  Pnak] = (CONSTANTS[(208 * offset) +  celltype]==1.00
 
 __device__ void applyDrugEffect(double *CONSTANTS, double conc, double *hill, int offset)
 {
-CONSTANTS[(208 * offset) +  PCa_b] *= ((hill[(offset*14) + 0] > 10E-14 && hill[(offset*14) + 1] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 0],hill[(offset*14) + 1])) : 1.);
-CONSTANTS[(208 * offset) +  GK1_b] *= ((hill[(offset*14) + 2] > 10E-14 && hill[(offset*14) + 3] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 2],hill[(offset*14) + 3])) : 1.);
-CONSTANTS[(208 * offset) +  GKs_b] *= ((hill[(offset*14) + 4] > 10E-14 && hill[(offset*14) + 5] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 4],hill[(offset*14) + 5])) : 1.);
-CONSTANTS[(208 * offset) +  GNa] *= ((hill[(offset*14) + 6] > 10E-14 && hill[(offset*14) + 7] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 6],hill[(offset*14) + 7])) : 1.);
-CONSTANTS[(208 * offset) +  GNaL_b] *= ((hill[(offset*14) + 8] > 10E-14 && hill[(offset*14) + 9] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 8],hill[(offset*14) + 9])) : 1.);
-CONSTANTS[(208 * offset) +  Gto_b] *= ((hill[(offset*14) + 10] > 10E-14 && hill[(offset*14) + 11] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 10],hill[(offset*14) + 11])) : 1.);
-//CONSTANTS[(208 * offset) +  GKr_b] = CONSTANTS[(208 * offset) +  GKr_b] * ((hill[(offset*14) + 12] > 10E-14 && hill[(offset*14) + 13] > 10E-14) ? 1./(1.+pow(conc/hill[(offset*14) + 12],hill[(offset*14) + 13])) : 1.);
+CONSTANTS[(208 * offset) + PCa_b] *= ((hill[(14 * offset) + 0] > 10E-14 && hill[(14 * offset) + 1] > 10E-14) ? 1./(1.+pow(conc/hill[(14 * offset) + 0],hill[(14 * offset) + 1])) : 1.);
+CONSTANTS[(208 * offset) + GK1_b] *= ((hill[(14 * offset) + 2] > 10E-14 && hill[(14 * offset) + 3] > 10E-14) ? 1./(1.+pow(conc/hill[(14 * offset) + 2],hill[(14 * offset) + 3])) : 1.);
+CONSTANTS[(208 * offset) + GKs_b] *= ((hill[(14 * offset) + 4] > 10E-14 && hill[(14 * offset) + 5] > 10E-14) ? 1./(1.+pow(conc/hill[(14 * offset) + 4],hill[(14 * offset) + 5])) : 1.);
+CONSTANTS[(208 * offset) + GNa] *= ((hill[(14 * offset) + 6] > 10E-14 && hill[(14 * offset) + 7] > 10E-14) ? 1./(1.+pow(conc/hill[(14 * offset) + 6],hill[(14 * offset) + 7])) : 1.);
+CONSTANTS[(208 * offset) + GNaL_b] *= ((hill[(14 * offset) + 8] > 10E-14 && hill[(14 * offset) + 9] > 10E-14) ? 1./(1.+pow(conc/hill[(14 * offset) + 8],hill[(14 * offset) + 9])) : 1.);
+CONSTANTS[(208 * offset) + Gto_b] *= ((hill[(14 * offset) + 10] > 10E-14 && hill[(14 * offset) + 11] > 10E-14) ? 1./(1.+pow(conc/hill[(14 * offset) + 10],hill[(14 * offset) + 11])) : 1.);
+//CONSTANTS[(208 * offset) + GKr_b] = CONSTANTS[GKr_b] * ((hill[(14 * offset) + 12] > 10E-14 && hill[(14 * offset) + 13] > 10E-14) ? 1./(1.+pow(conc/hill[(14 * offset) + 12],hill[(14 * offset) + 13])) : 1.);
 }
 
 __device__ void ___applyHERGBinding(double *CONSTANTS, double *STATES, double conc, double *herg, int offset)
@@ -814,7 +814,7 @@ __device__ void ___applyCvar(double *CONSTANTS, double *cvar, int offset)
 {
   int num_of_constants= 208;
 
-   CONSTANTS[(num_of_constants * offset) + GNa] *= cvar[(18 * offset) + 0];		// GNa
+  CONSTANTS[(num_of_constants * offset) + GNa] *= cvar[(18 * offset) + 0];		// GNa
   CONSTANTS[(num_of_constants * offset) + GNaL_b] *= cvar[(18 * offset) + 1];		// GNaL
   CONSTANTS[(num_of_constants * offset) + Gto_b] *= cvar[(18 * offset) + 2];		// Gto
   CONSTANTS[(num_of_constants * offset) + GKr_b] *= cvar[(18 * offset) + 3];		// GKr
@@ -901,7 +901,12 @@ CONSTANTS[(208 * offset) + GKb] = (CONSTANTS[(208 * offset) + celltype]==1.00000
 CONSTANTS[(208 * offset) + upScale] = (CONSTANTS[(208 * offset) + celltype]==1.00000 ? 1.30000 : 1.00000);
 CONSTANTS[(208 * offset) + Gncx] = (CONSTANTS[(208 * offset) + celltype]==1.00000 ?  CONSTANTS[(208 * offset) + Gncx_b]*1.10000 : CONSTANTS[(208 * offset) + celltype]==2.00000 ?  CONSTANTS[(208 * offset) + Gncx_b]*1.40000 : CONSTANTS[(208 * offset) + Gncx_b]);
 CONSTANTS[(208 * offset) + Pnak] = (CONSTANTS[(208 * offset) + celltype]==1.00000 ?  CONSTANTS[(208 * offset) + Pnak_b]*0.900000 : CONSTANTS[(208 * offset) + celltype]==2.00000 ?  CONSTANTS[(208 * offset) + Pnak_b]*0.700000 : CONSTANTS[(208 * offset) + Pnak_b]);
-
+// #ifdef TISSUE
+// if(is_s1) ALGEBRAIC[Istim] = CONSTANTS[amp];
+// else ALGEBRAIC[Istim] = 0.0;
+// #else
+ALGEBRAIC[(200 * offset) + Istim] = (TIME>=CONSTANTS[(208 * offset) + stim_start]&&TIME<=CONSTANTS[(208 * offset) + stim_end]&&(TIME - CONSTANTS[(208 * offset) + stim_start]) -  floor((TIME - CONSTANTS[(208 * offset) + stim_start])/CONSTANTS[(208 * offset) + BCL])*CONSTANTS[(208 * offset) + BCL]<=CONSTANTS[(208 * offset) + duration] ? CONSTANTS[(208 * offset) + amp] : 0.000000);
+// #endif
 ALGEBRAIC[(200 * offset) + hLss] = 1.00000/(1.00000+exp((STATES[(49 * offset) + V]+87.6100)/7.48800));
 ALGEBRAIC[(200 * offset) + hLssp] = 1.00000/(1.00000+exp((STATES[(49 * offset) + V]+93.8100)/7.48800));
 ALGEBRAIC[(200 * offset) + mss] = 1.00000/(1.00000+exp(- (STATES[(49 * offset) + V]+CONSTANTS[(208 * offset) + mssV1])/CONSTANTS[(208 * offset) + mssV2]));
@@ -1003,7 +1008,6 @@ ALGEBRAIC[(200 * offset) + JnakK] =  2.00000*( ALGEBRAIC[(200 * offset) + E4]*CO
 ALGEBRAIC[(200 * offset) + INaK] =  CONSTANTS[(208 * offset) + Pnak]*( CONSTANTS[(208 * offset) + zna]*ALGEBRAIC[(200 * offset) + JnakNa]+ CONSTANTS[(208 * offset) + zk]*ALGEBRAIC[(200 * offset) + JnakK]);
 ALGEBRAIC[(200 * offset) + xkb] = 1.00000/(1.00000+exp(- (STATES[(49 * offset) + V] - 14.4800)/18.3400));
 ALGEBRAIC[(200 * offset) + IKb] =  CONSTANTS[(208 * offset) + GKb]*ALGEBRAIC[(200 * offset) + xkb]*(STATES[(49 * offset) + V] - ALGEBRAIC[(200 * offset) + EK]);
-ALGEBRAIC[(200 * offset) + Istim] = (TIME>=CONSTANTS[(208 * offset) + stim_start]&&TIME<=CONSTANTS[(208 * offset) + stim_end]&&(TIME - CONSTANTS[(208 * offset) + stim_start]) -  floor((TIME - CONSTANTS[(208 * offset) + stim_start])/CONSTANTS[(208 * offset) + BCL])*CONSTANTS[(208 * offset) + BCL]<=CONSTANTS[(208 * offset) + duration] ? CONSTANTS[(208 * offset) + amp] : 0.000000);
 ALGEBRAIC[(200 * offset) + JdiffK] = (STATES[(49 * offset) + kss] - STATES[(49 * offset) + ki])/2.00000;
 ALGEBRAIC[(200 * offset) + A_3] = ( 0.750000*CONSTANTS[(208 * offset) + ffrt]*( STATES[(49 * offset) + kss]*exp(ALGEBRAIC[(200 * offset) + vfrt]) - CONSTANTS[(208 * offset) + ko]))/CONSTANTS[(208 * offset) + B_3];
 ALGEBRAIC[(200 * offset) + U_3] =  CONSTANTS[(208 * offset) + B_3]*(STATES[(49 * offset) + V] - CONSTANTS[(208 * offset) + v0_CaL]);
