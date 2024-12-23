@@ -522,7 +522,7 @@
 
 
   // algebraic_size = 200;
-  // constants_size = 208;
+  // constants_size= 208;
   // states_size = 49;
 
 __device__ void ___initConsts(double *CONSTANTS, double *STATES, double type, double bcl, int offset)
@@ -834,6 +834,7 @@ __device__ void ___applyCvar(double *CONSTANTS, double *cvar, int offset)
   CONSTANTS[(num_of_constants * offset) + Jup_b] *= cvar[(18 * offset) + 14];	// RyR_Total (uptake)
   CONSTANTS[(num_of_constants * offset) + Jtr_b] *= cvar[(18 * offset) + 15];	// Trans_Total (NSR to JSR translocation)
   CONSTANTS[(num_of_constants * offset) + Jleak_b] *= cvar[(18 * offset) + 16];	// Leak_Total (Ca leak from NSR)
+
 }
 
 __device__ void initConsts(double *CONSTANTS, double *STATES, double type, double conc, double *hill, double *herg, double *cvar, bool is_dutta, bool is_cvar, double bcl, double epsilon, int offset)
@@ -1096,10 +1097,11 @@ ALGEBRAIC[(200 * offset) + Bcass] = 1.00000/(1.00000+( CONSTANTS[(208 * offset) 
 ALGEBRAIC[(200 * offset) + Jupnp] = ( CONSTANTS[(208 * offset) + upScale]*0.00437500*STATES[(49 * offset) + cai])/(STATES[(49 * offset) + cai]+0.000920000);
 ALGEBRAIC[(200 * offset) + Jupp] = ( CONSTANTS[(208 * offset) + upScale]*2.75000*0.00437500*STATES[(49 * offset) + cai])/((STATES[(49 * offset) + cai]+0.000920000) - 0.000170000);
 ALGEBRAIC[(200 * offset) + fJupp] = 1.00000/(1.00000+CONSTANTS[(208 * offset) + KmCaMK]/ALGEBRAIC[(200 * offset) + CaMKa]);
-ALGEBRAIC[(200 * offset) + Jleak] = ( 0.00393750*STATES[(49 * offset) + cansr])/15.0000;
+//cvar addition
+ALGEBRAIC[(200 * offset) + Jleak] = CONSTANTS[(208 * offset) + Jleak_b] * ( 0.00393750*STATES[(49 * offset) + cansr])/15.0000;
 ALGEBRAIC[(200 * offset) + Jup] =  CONSTANTS[(208 * offset) + Jup_b]*(( (1.00000 - ALGEBRAIC[(200 * offset) + fJupp])*ALGEBRAIC[(200 * offset) + Jupnp]+ ALGEBRAIC[(200 * offset) + fJupp]*ALGEBRAIC[(200 * offset) + Jupp]) - ALGEBRAIC[(200 * offset) + Jleak]);
 ALGEBRAIC[(200 * offset) + Bcai] = 1.00000/(1.00000+( CONSTANTS[(208 * offset) + cmdnmax]*CONSTANTS[(208 * offset) + kmcmdn])/pow(CONSTANTS[(208 * offset) + kmcmdn]+STATES[(49 * offset) + cai], 2.00000)+( CONSTANTS[(208 * offset) + trpnmax]*CONSTANTS[(208 * offset) + kmtrpn])/pow(CONSTANTS[(208 * offset) + kmtrpn]+STATES[(49 * offset) + cai], 2.00000));
-ALGEBRAIC[(200 * offset) + Jtr] = (STATES[(49 * offset) + cansr] - STATES[(49 * offset) + cajsr])/100.000;
+ALGEBRAIC[(200 * offset) + Jtr] = CONSTANTS[(208 * offset) + Jtr_b] * (STATES[(49 * offset) + cansr] - STATES[(49 * offset) + cajsr])/100.000;
 ALGEBRAIC[(200 * offset) + Bcajsr] = 1.00000/(1.00000+( CONSTANTS[(208 * offset) + csqnmax]*CONSTANTS[(208 * offset) + kmcsqn])/pow(CONSTANTS[(208 * offset) + kmcsqn]+STATES[(49 * offset) + cajsr], 2.00000));
 
 //RATES[(49 * offset) + D] = CONSTANTS[(208 * offset) + cnc];
