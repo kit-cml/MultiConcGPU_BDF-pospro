@@ -1,7 +1,7 @@
 /*
    There are a total of 200 entries in the algebraic variable array.
    There are a total of 49 entries in each of the rate and state variable arrays.
-   There are a total of 206 entries in the constant variable array.
+   There are a total of 206+2 entries in the constant variable array.
  */
 
 #include "Ohara_Rudy_cipa_v1_2017.hpp"
@@ -856,8 +856,8 @@ __device__ void initConsts(double *CONSTANTS, double *STATES, double type, doubl
     printf("%lf,", cvar[idx]);
     }
     printf("\n");
-    printf("After cvar: \nPCa:%lf \nGK1:%lf \nGKs:%lf \nGNa:%lf \nGNaL:%lf \nGto:%lf \nGKr:%lf\n",
-      CONSTANTS[PCa], CONSTANTS[GK1], CONSTANTS[GKs], CONSTANTS[GNa], CONSTANTS[GNaL], CONSTANTS[Gto], CONSTANTS[GKr]);
+    printf("After cvar: \nPCa_b:%lf \nGK1_b:%lf \nGKs_b:%lf \nGNa:%lf \nGNaL_b:%lf \nGto_b:%lf \nGKr_b:%lf\n",
+      CONSTANTS[PCa_b], CONSTANTS[GK1_b], CONSTANTS[GKs_b], CONSTANTS[GNa], CONSTANTS[GNaL_b], CONSTANTS[Gto_b], CONSTANTS[GKr_b]);
 	}
 
   applyDrugEffect(CONSTANTS, conc, hill, offset);
